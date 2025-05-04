@@ -1,0 +1,29 @@
+"use client";
+import { urlForImage } from "@/sanity/lib/image";
+import {SanityImageSource} from "@sanity/image-url/lib/types/types";
+import Image, {ImageProps} from "next/image";
+
+type Props = Omit<ImageProps, "src"> & {
+  src: SanityImageSource;
+  ref?: React.RefObject<HTMLImageElement | null>;
+  onLoad?: () => void;
+};
+
+export const SanityImage = ({src, alt, ref, onLoad, ...props}: Props) => {
+  // Ensure alt is not undefined or empty, fallback to "Image" if it is
+  const altText = alt || "Mike Jones Auctioneers";
+
+  return (
+    <Image
+      src={urlForImage(src).url()}
+      priority
+      loading="eager"
+      alt={altText}
+      sizes="(min-width: 1200px) 85vw, (min-width: 768px) 75vw"
+      loader={({width, quality = 100}) => urlForImage(src).width(width).quality(quality).url()}
+      {...props}
+      ref={ref}
+      onLoad={onLoad}
+    />
+  );
+};
