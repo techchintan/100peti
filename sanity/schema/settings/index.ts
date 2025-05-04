@@ -30,11 +30,6 @@ export const settings = defineType({
           title: "Name",
           type: "string",
         }),
-        defineField({
-          name: "logo",
-          title: "Logo",
-          type: "image",
-        }),
       ],
     }),
     defineField({
@@ -49,8 +44,8 @@ export const settings = defineType({
           type: "array",
           of: [
             defineField({
-              name: "link",
-              title: "Link",
+              name: "headerLink",
+              title: "Header Link",
               type: "object",
               fields: [
                 defineField({
@@ -63,42 +58,29 @@ export const settings = defineType({
                   title: "Link",
                   type: "string",
                 }),
-              ],
-            }),
-          ],
-        }),
-      ],
-    }),
-    defineField({
-      name: "footer",
-      title: "Footer",
-      group: "footer",
-      type: "object",
-      fields: [
-        defineField({
-          name: "socialLinks",
-          title: "Social Links",
-          type: "array",
-          of: [
-            defineField({
-              name: "link",
-              title: "Link",
-              type: "object",
-              fields: [
                 defineField({
-                  name: "icon",
-                  title: "Icon",
-                  type: "image",
-                }),
-                defineField({
-                  name: "label",
-                  title: "Label",
-                  type: "string",
-                }),
-                defineField({
-                  name: "link",
-                  title: "Link",
-                  type: "url",
+                  name: "submenu",
+                  title: "Submenu",
+                  type: "array",
+                  of: [
+                    defineField({
+                      name: "submenuItem",
+                      title: "Submenu Item",
+                      type: "object",
+                      fields: [
+                        defineField({
+                          name: "label",
+                          title: "Label",
+                          type: "string",
+                        }),
+                        defineField({
+                          name: "link",
+                          title: "Link",
+                          type: "string",
+                        }),
+                      ],
+                    }),
+                  ],
                 }),
               ],
             }),
@@ -110,7 +92,6 @@ export const settings = defineType({
   preview: {
     select: {
       title: "brand.name",
-      media: "brand.logo",
     },
   },
 });
