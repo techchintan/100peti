@@ -74,6 +74,53 @@ export type Slug = {
   source?: string;
 };
 
+export type Transactions = {
+  _id: string;
+  _type: "transactions";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  transactionDate: string;
+  transactionAmount: number;
+  transactionType: "income" | "expense";
+  isBorrow?: boolean;
+  borrower?: {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "intermediaries";
+  };
+  sender?: {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "intermediaries";
+  };
+  receiver?: {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "intermediaries";
+  };
+  transactionDescription?: string;
+};
+
+export type Intermediaries = {
+  _id: string;
+  _type: "intermediaries";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  name?: string;
+  mobileNumber?: string;
+  relationship?: string;
+  bankName?: string;
+  accountNumber?: number;
+  ifscCode?: string;
+  swiftCode?: string;
+  bankLocation?: string;
+};
+
 export type Home = {
   _id: string;
   _type: "home";
@@ -261,6 +308,8 @@ export type AllSanitySchemaTypes =
   | SanityFileAsset
   | Geopoint
   | Slug
+  | Transactions
+  | Intermediaries
   | Home
   | Settings
   | BlockContent

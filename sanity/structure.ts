@@ -1,4 +1,11 @@
-import {CogIcon, HomeIcon, DocumentsIcon, WrenchIcon} from "@sanity/icons";
+import {
+  CogIcon,
+  DocumentsIcon,
+  HomeIcon,
+  UsersIcon,
+  WrenchIcon,
+  CreditCardIcon,
+} from "@sanity/icons";
 import type {StructureResolver} from "sanity/structure";
 
 export const structure: StructureResolver = (S) =>
@@ -21,6 +28,10 @@ export const structure: StructureResolver = (S) =>
             ]),
         ),
       S.divider(),
+      S.documentTypeListItem("transactions")
+        .id("transactions")
+        .title("Transactions")
+        .icon(CreditCardIcon),
       S.listItem()
         .title("Utilities")
         .icon(WrenchIcon)
@@ -28,6 +39,10 @@ export const structure: StructureResolver = (S) =>
           S.list()
             .title("Utilities")
             .items([
+              S.documentTypeListItem("intermediaries")
+                .id("intermediaries")
+                .icon(UsersIcon)
+                .title("Intermediaries"),
               S.listItem()
                 .id("settings")
                 .icon(CogIcon)

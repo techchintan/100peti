@@ -1,8 +1,8 @@
 import type {Metadata} from "next";
 import {EB_Garamond, Poppins} from "next/font/google";
 import "../globals.css";
-import Header from "@/app/components/header";
-import Footer from "@/app/components/footer";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 import {Settings as SettingsType} from "@/sanity.types";
 import {sanityFetch} from "@/sanity/lib/live";
 import {SETTINGS} from "@/sanity/queries";
