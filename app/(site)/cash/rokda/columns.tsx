@@ -4,8 +4,20 @@
 import {ColumnDef} from "@tanstack/react-table";
 import {Transactions} from "@/sanity.types";
 import {cn} from "@/lib/utils";
-import {Switch} from "@/components/ui/switch";
 import {Button} from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {CheckIcon} from "lucide-react";
+import {toast} from "sonner";
 
 export const columns: ColumnDef<Transactions>[] = [
   {
@@ -41,7 +53,7 @@ export const columns: ColumnDef<Transactions>[] = [
     accessorKey: "transactionType",
     header: ({column}) => (
       <Button
-        className="font-sans font-bold text-base"
+        className="font-sans text-base font-bold"
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
@@ -49,7 +61,7 @@ export const columns: ColumnDef<Transactions>[] = [
       </Button>
     ),
     cell: ({row}) => {
-      return <div className="capitalize text-center">{row.original.transactionType}</div>;
+      return <div className="text-center capitalize">{row.original.transactionType}</div>;
     },
   },
   {
@@ -85,7 +97,10 @@ export const columns: ColumnDef<Transactions>[] = [
     header: "Transaction Description",
     cell: ({row}) => {
       return (
-        <div className="capitalize max-w-[350px] truncate" title={row.original.transactionDescription || "N/A"}>
+        <div
+          className="max-w-[320px] truncate capitalize"
+          title={row.original.transactionDescription || "N/A"}
+        >
           {row.original.transactionDescription || "N/A"}
         </div>
       );
@@ -97,7 +112,50 @@ export const columns: ColumnDef<Transactions>[] = [
     cell: ({row}) => {
       return row.original.isBorrow ? (
         <div className="flex items-center gap-2 capitalize">
-          <Switch id="is-borrow" checked={row.original.isBorrow} />
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="icon">
+                <CheckIcon className="cursor-pointer text-green-500" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will mark this transaction as not borrowed. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={async () => {
+                    try {
+                      const response = await fetch("/api/transactions", {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          _id: row.original._id,
+                          isBorrow: false,
+                          transactionType: "income",
+                        }),
+                      });
+
+                      if (response.ok) {
+                        toast.success("Transaction updated successfully!");
+                      }
+                    } catch (error) {
+                      console.error("Failed to update transaction:", error);
+                      toast.error("Failed to update transaction");
+                    }
+                  }}
+                >
+                  Continue
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       ) : (
         <div className="capitalize">No</div>

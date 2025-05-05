@@ -11,33 +11,39 @@ export default async function HomePage() {
     },
   });
 
-  const chartData = transactions?.reduce(
-    (acc, transaction) => {
-      const date = new Date(transaction.transactionDate);
-      const monthYear = `${date.toLocaleDateString("en-GB", {
-        month: "long",
-      })} ${date.getFullYear()}`;
+  const chartData = transactions
+    ?.reduce(
+      (acc, transaction) => {
+        const date = new Date(transaction.transactionDate);
+        const monthYear = `${date.toLocaleDateString("en-GB", {
+          month: "long",
+        })} ${date.getFullYear()}`;
 
-      const existingMonth = acc.find((item) => item.month === monthYear);
+        const existingMonth = acc.find((item) => item.month === monthYear);
 
-      if (existingMonth) {
-        if (transaction.transactionType === "income") {
-          existingMonth.income += transaction.transactionAmount;
+        if (existingMonth) {
+          if (transaction.transactionType === "income") {
+            existingMonth.income += transaction.transactionAmount;
+          } else {
+            existingMonth.expense += transaction.transactionAmount;
+          }
         } else {
-          existingMonth.expense += transaction.transactionAmount;
+          acc.push({
+            month: monthYear,
+            income: transaction.transactionType === "income" ? transaction.transactionAmount : 0,
+            expense: transaction.transactionType === "expense" ? transaction.transactionAmount : 0,
+          });
         }
-      } else {
-        acc.push({
-          month: monthYear,
-          income: transaction.transactionType === "income" ? transaction.transactionAmount : 0,
-          expense: transaction.transactionType === "expense" ? transaction.transactionAmount : 0,
-        });
-      }
 
-      return acc;
-    },
-    [] as Array<{month: string; income: number; expense: number}>,
-  );
+        return acc;
+      },
+      [] as Array<{month: string; income: number; expense: number}>,
+    )
+    .sort((a, b) => {
+      const dateA = new Date(a.month);
+      const dateB = new Date(b.month);
+      return dateB.getTime() - dateA.getTime();
+    });
 
   return (
     <section className="bg-white font-sans">

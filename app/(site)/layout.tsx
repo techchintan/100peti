@@ -6,6 +6,7 @@ import Footer from "@/components/footer";
 import {Settings as SettingsType} from "@/sanity.types";
 import {sanityFetch} from "@/sanity/lib/live";
 import {SETTINGS} from "@/sanity/queries";
+import { Toaster } from "@/components/ui/sonner";
 
 const ebGaramond = EB_Garamond({
   variable: "--font-ebg",
@@ -42,6 +43,7 @@ export default async function RootLayout({
         <div className="container">
           <Header {...settings} />
           <main>{children}</main>
+          <Toaster />
         </div>
         <Footer {...settings} />
       </body>

@@ -2,7 +2,7 @@
 
 import {defineLive} from "next-sanity";
 import {client} from "./client";
-import {token} from "./token";
+import {writeToken} from "./token";
 
 type SanityFetchArgs = {
   query: string;
@@ -26,6 +26,6 @@ const defineLiveTyped = (options: DefineLiveOptions): DefineLiveReturn => {
 
 export const {sanityFetch, SanityLive} = defineLiveTyped({
   client,
-  serverToken: token!,
-  browserToken: token!,
+  serverToken: writeToken!,
+  browserToken: writeToken!,
 });
