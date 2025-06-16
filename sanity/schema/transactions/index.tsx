@@ -1,14 +1,14 @@
-import {defineField} from "sanity";
-import {defineType} from "sanity";
+import { defineField } from "sanity";
+import { defineType } from "sanity";
 
 export const transactions = defineType({
   name: "transactions",
   title: "Transactions",
   type: "document",
   groups: [
-    {name: "details", title: "Details"},
-    {name: "borrower", title: "Borrower"},
-    {name: "between", title: "Between"},
+    { name: "details", title: "Details" },
+    { name: "borrower", title: "Borrower" },
+    { name: "between", title: "Between" },
   ],
   fields: [
     defineField({
@@ -35,8 +35,8 @@ export const transactions = defineType({
       validation: (Rule) => Rule.required(),
       options: {
         list: [
-          {title: "Income", value: "income"},
-          {title: "Expense", value: "expense"},
+          { title: "Income", value: "income" },
+          { title: "Expense", value: "expense" },
         ],
       },
     }),
@@ -53,8 +53,8 @@ export const transactions = defineType({
       title: "Borrower",
       group: "borrower",
       type: "reference",
-      to: [{type: "intermediaries"}],
-      hidden: ({document}) => !document?.isBorrow,
+      to: [{ type: "intermediaries" }],
+      hidden: ({ document }) => !document?.isBorrow,
     }),
     defineField({
       name: "sender",
@@ -62,7 +62,7 @@ export const transactions = defineType({
       description: "Who is sending the money",
       group: "between",
       type: "reference",
-      to: [{type: "intermediaries"}],
+      to: [{ type: "intermediaries" }],
     }),
     defineField({
       name: "receiver",
@@ -70,7 +70,7 @@ export const transactions = defineType({
       description: "Who is receiving the money",
       group: "between",
       type: "reference",
-      to: [{type: "intermediaries"}],
+      to: [{ type: "intermediaries" }],
     }),
     defineField({
       name: "transactionDescription",
@@ -90,12 +90,16 @@ export const transactions = defineType({
       transactionType: "transactionType",
     },
     prepare: (value) => {
-      const {_id, date, amount, sender, receiver, transactionType} = value;
+      const { _id, date, amount, sender, receiver, transactionType } = value;
 
       return {
         _id: _id,
-        title: `${transactionType === "income" ? "+" : "-"} ₹${amount}`,
-        subtitle: `On ${new Date(date).toLocaleDateString('en-GB')} b/w ${sender} and ${receiver}`,
+        title: `${transactionType === "income" ? "+" : "-"} ${amount.toLocaleString("en-IN", {
+          style: "currency",
+          currency: "INR",
+          maximumFractionDigits: 0,
+        })}`,
+        subtitle: `On ${new Date(date).toLocaleDateString("en-GB")} b/w ${sender} and ${receiver}`,
         description: transactionType,
         media:
           transactionType === "income" ? (

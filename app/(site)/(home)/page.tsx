@@ -1,10 +1,10 @@
-import {Transactions} from "@/sanity.types";
-import {sanityFetch} from "@/sanity/lib/live";
-import {ROKDA_TRANSACTIONS} from "@/sanity/queries";
-import {IncomeExpense} from "./income-expense";
+import { Transactions } from "@/sanity.types";
+import { sanityFetch } from "@/sanity/lib/live";
+import { ROKDA_TRANSACTIONS } from "@/sanity/queries";
+import { IncomeExpense } from "./income-expense";
 
 export default async function HomePage() {
-  const {data: transactions} = await sanityFetch<Transactions[]>({
+  const { data: transactions } = await sanityFetch<Transactions[]>({
     query: ROKDA_TRANSACTIONS,
     params: {
       type: "all",
@@ -24,20 +24,25 @@ export default async function HomePage() {
         if (existingMonth) {
           if (transaction.transactionType === "income") {
             existingMonth.income += transaction.transactionAmount;
-          } else {
-            existingMonth.expense += transaction.transactionAmount;
+          } else if (transaction.transactionType === "expense") {
+            if (transaction.isBorrow) {
+              existingMonth.borrow += transaction.transactionAmount;
+            } else {
+              existingMonth.expense += transaction.transactionAmount;
+            }
           }
         } else {
           acc.push({
             month: monthYear,
             income: transaction.transactionType === "income" ? transaction.transactionAmount : 0,
-            expense: transaction.transactionType === "expense" ? transaction.transactionAmount : 0,
+            expense: transaction.transactionType === "expense" && !transaction.isBorrow ? transaction.transactionAmount : 0,
+            borrow: transaction.transactionType === "expense" && transaction.isBorrow ? transaction.transactionAmount : 0,
           });
         }
 
         return acc;
       },
-      [] as Array<{month: string; income: number; expense: number}>,
+      [] as Array<{ month: string; income: number; expense: number; borrow: number }>,
     )
     .sort((a, b) => {
       const dateA = new Date(a.month);
@@ -50,7 +55,7 @@ export default async function HomePage() {
       <h2 className="text-secondary mb-4 text-3xl font-light italic">
         Wealth Management Dashboard
       </h2>
-      <IncomeExpense chartData={chartData} transactions={transactions} />
+      <IncomeExpense chartData={chartData} />
     </section>
   );
 }

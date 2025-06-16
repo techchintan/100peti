@@ -8,13 +8,14 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  Row,
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import {useState} from "react";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
-import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
+import { useState } from "react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -22,15 +23,17 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {FilterIcon} from "lucide-react";
-import {DataTablePagination} from "./pagination";
+import { FilterIcon } from "lucide-react";
+import { DataTablePagination } from "./pagination";
+import { chartConfig } from "../../(home)/income-expense";
+import { Transactions } from "@/sanity.types";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function DataTable<TData, TValue>({columns, data}: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
@@ -58,7 +61,7 @@ export function DataTable<TData, TValue>({columns, data}: DataTableProps<TData, 
     globalFilterFn: (row, columnId, filterValue) => {
       const searchableColumns = ["sender.name", "receiver.name", "borrower.name"];
       const value = row.getValue(columnId) as string;
-      
+
       if (searchableColumns.includes(columnId)) {
         return value?.toLowerCase().includes(filterValue.toLowerCase());
       }
@@ -129,15 +132,24 @@ export function DataTable<TData, TValue>({columns, data}: DataTableProps<TData, 
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="font-serif">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              table.getRowModel().rows.map((row: Row<TData>) => {
+                const isBorrowed = (row.original as Transactions).isBorrow;
+                return (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    style={{
+                      color: isBorrowed ? chartConfig.borrow.color : "inherit",
+                    }}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className="font-serif">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center font-serif">

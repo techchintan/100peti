@@ -14,6 +14,8 @@ const singletonActions = new Set<string>(["publish", "discardChanges", "restore"
 const singletonTypes = new Set<string>([]);
 
 export default defineConfig({
+  title: "Sudani's Finance Tracker",
+  name: "finance-tracker",
   basePath: "/studio",
   projectId,
   dataset,

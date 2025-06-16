@@ -400,6 +400,32 @@ export type SETTINGSResult = {
     }>;
   };
 } | null;
+// Variable: ROKDA_TRANSACTIONS
+// Query: *[_type == "transactions" && ($type == "all" || transactionType == $type)] | order(transactionDate desc) {    ...,    _id,    borrower->{        _id,        name,    },    sender->{        _id,        name,    },    receiver->{        _id,        name,    },}
+export type ROKDA_TRANSACTIONSResult = Array<{
+  _id: string;
+  _type: "transactions";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  transactionDate: string;
+  transactionAmount: number;
+  transactionType: "expense" | "income";
+  isBorrow?: boolean;
+  borrower: {
+    _id: string;
+    name: string | null;
+  } | null;
+  sender: {
+    _id: string;
+    name: string | null;
+  } | null;
+  receiver: {
+    _id: string;
+    name: string | null;
+  } | null;
+  transactionDescription?: string;
+}>;
 
 // Query TypeMap
 import "@sanity/client";
@@ -407,5 +433,6 @@ declare module "@sanity/client" {
   interface SanityQueries {
     '*[_type == "home"][0]': HOMEResult;
     '*[_type == "settings"][0]': SETTINGSResult;
+    '*[_type == "transactions" && ($type == "all" || transactionType == $type)] | order(transactionDate desc) {\n    ...,\n    _id,\n    borrower->{\n        _id,\n        name,\n    },\n    sender->{\n        _id,\n        name,\n    },\n    receiver->{\n        _id,\n        name,\n    },\n}': ROKDA_TRANSACTIONSResult;
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import {Bar, BarChart, CartesianGrid, XAxis, YAxis} from "recharts";
-import {useMemo} from "react";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { useMemo } from "react";
 
 import {
   ChartConfig,
@@ -11,10 +11,9 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
-import {Transactions} from "@/sanity.types";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-const chartConfig = {
+export const chartConfig = {
   income: {
     label: "Income",
     color: "#008000",
@@ -23,14 +22,16 @@ const chartConfig = {
     label: "Expense",
     color: "#ff0000",
   },
+  borrow: {
+    label: "Borrow",
+    color: "#ffa500",
+  },
 } satisfies ChartConfig;
 
 export function IncomeExpense({
   chartData,
-  transactions,
 }: {
-  chartData: Array<{month: string; income: number; expense: number}>;
-  transactions: Transactions[];
+  chartData: Array<{ month: string; income: number; expense: number; borrow: number }>;
 }) {
   const total = useMemo(() => {
     return chartData.reduce(
@@ -38,28 +39,19 @@ export function IncomeExpense({
         return {
           income: acc.income + curr.income,
           expense: acc.expense + curr.expense,
-          balance: acc.balance + (curr.income - curr.expense),
+          borrow: acc.borrow + curr.borrow,
+          cash: acc.income - acc.expense - acc.borrow,
         };
       },
-      {income: 0, expense: 0, balance: 0},
+      { income: 0, expense: 0, borrow: 0, cash: 0 },
     );
   }, [chartData]);
 
-  const totalBorrow = useMemo(() => {
-    return transactions.reduce((acc, curr) => {
-      if (curr.isBorrow) {
-        return acc + curr.transactionAmount;
-      }
-      return acc;
-    }, 0);
-  }, [transactions]);
-
   const buttons = [
-    {key: "income", label: "Income"},
-    {key: "expense", label: "Expense"},
-    {key: "balance", label: "Balance"},
-    {key: "borrow", label: "Borrow"},
-    {key: "cash", label: "Cash at Home"},
+    { key: "income", label: "Income" },
+    { key: "borrow", label: "Borrow" },
+    { key: "expense", label: "Expense" },
+    { key: "cash", label: "Cash at Home(Excluding Borrowed)" },
   ];
 
   return (
@@ -73,14 +65,8 @@ export function IncomeExpense({
           </CardDescription>
         </div>
         <div className="flex font-sans">
-          {buttons.map(({key, label}) => {
-            const chart = key as keyof typeof chartConfig | "balance";
-            const value =
-              key === "borrow"
-                ? totalBorrow
-                : key === "cash"
-                  ? totalBorrow + total.income - total.expense
-                  : total[key as keyof typeof total];
+          {buttons.map(({ key, label }) => {
+            const chart = key as keyof typeof chartConfig;
 
             return (
               <button
@@ -88,10 +74,10 @@ export function IncomeExpense({
                 className="data-[active=true]:bg-muted/50 relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l sm:border-t-0 sm:border-l sm:px-8 sm:py-6"
               >
                 <span className="text-muted-foreground text-sm">
-                  {chartConfig[chart as keyof typeof chartConfig]?.label ?? label}
+                  {label}
                 </span>
                 <span className="text-lg leading-none font-bold sm:text-3xl">
-                  {value.toLocaleString("en-IN", {
+                  {total[key as keyof typeof total].toLocaleString("en-IN", {
                     style: "currency",
                     currency: "INR",
                     maximumFractionDigits: 0,
@@ -126,6 +112,7 @@ export function IncomeExpense({
             <ChartLegend content={<ChartLegendContent />} />
             <Bar dataKey="income" fill="var(--color-income)" radius={4} />
             <Bar dataKey="expense" fill="var(--color-expense)" radius={4} />
+            <Bar dataKey="borrow" fill="var(--color-borrow)" radius={4} />
           </BarChart>
         </ChartContainer>
       </CardContent>
