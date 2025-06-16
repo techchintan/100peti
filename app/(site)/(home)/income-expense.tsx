@@ -51,7 +51,7 @@ export function IncomeExpense({
     { key: "income", label: "Income" },
     { key: "borrow", label: "Borrow" },
     { key: "expense", label: "Expense" },
-    { key: "cash", label: "Cash at Home(Excluding Borrowed)" },
+    { key: "cash", label: "Cash at Home" },
   ];
 
   return (
