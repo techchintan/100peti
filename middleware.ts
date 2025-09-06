@@ -4,10 +4,6 @@ import {getIronSession} from "iron-session";
 import {sessionOptions, type SessionData} from "@/lib/session";
 
 export async function middleware(req: NextRequest) {
-  if (req.nextUrl.pathname.startsWith("/_next/image")) {
-    return NextResponse.next();
-  }
-
   const res = NextResponse.next();
   const session = await getIronSession<SessionData>(req, res, sessionOptions);
 
@@ -25,5 +21,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next|api|favicon.ico|_vercel|studio).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api|studio|_vercel|.*\\.(.*)).*)"],
 };
