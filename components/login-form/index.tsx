@@ -117,7 +117,7 @@ export function LoginForm({className, ...props}: React.ComponentProps<"div">) {
           <div className="bg-muted relative hidden md:block">
             <div className="absolute inset-0">
               <Image
-                src="/chintan.jpg"
+                src="/chintan.webp"
                 alt="Profile Picture"
                 fill
                 sizes="(min-width: 768px) 50vw, 100vw"
