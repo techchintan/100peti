@@ -4,7 +4,7 @@ import {getIronSession} from "iron-session";
 import {sessionOptions, type SessionData} from "@/lib/session";
 
 export async function middleware(req: NextRequest) {
-  if (req.nextUrl.pathname === "/chintan.webp") {
+  if (req.nextUrl.pathname.startsWith("/_next/image")) {
     return NextResponse.next();
   }
 
