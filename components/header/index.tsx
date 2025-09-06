@@ -5,9 +5,12 @@ import React, {useState} from "react";
 import {merge} from "@/utils";
 import {usePathname} from "next/navigation";
 import {Settings as SettingsType} from "@/sanity.types";
+import {Button} from "@/components/ui/button";
+import {useRouter} from "next/navigation";
 
 export default function Header(props: SettingsType) {
   const {brand, header} = props;
+  const router = useRouter();
   const pathname = usePathname();
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
 
@@ -18,7 +21,7 @@ export default function Header(props: SettingsType) {
         {(header?.headerLinks || []).map((item) => (
           <div
             key={item._key}
-            className="relative group"
+            className="group relative"
             onMouseEnter={() => setActiveSubmenu(item._key)}
             onMouseLeave={() => setActiveSubmenu(null)}
           >
@@ -55,6 +58,14 @@ export default function Header(props: SettingsType) {
             )}
           </div>
         ))}
+        <Button
+          onClick={async () => {
+            await fetch("/api/logout", {method: "POST"});
+            router.push("/login");
+          }}
+        >
+          Logout
+        </Button>
       </nav>
     </header>
   );
