@@ -133,13 +133,13 @@ export function DataTable<TData, TValue>({columns, data}: DataTableProps<TData, 
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row: Row<TData>) => {
-                const isBorrowed = (row.original as Transactions).isBorrow;
+                const isLentMoney = (row.original as Transactions).isBorrow;
                 return (
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
                     style={{
-                      color: isBorrowed ? chartConfig.lentMoney.color : "inherit",
+                      color: isLentMoney ? chartConfig.lentMoney.color : "inherit",
                     }}
                   >
                     {row.getVisibleCells().map((cell) => (

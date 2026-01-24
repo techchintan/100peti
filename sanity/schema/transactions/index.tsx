@@ -7,7 +7,7 @@ export const transactions = defineType({
   type: "document",
   groups: [
     {name: "details", title: "Details"},
-    {name: "borrower", title: "Lent Money to"},
+    {name: "lentMoney", title: "Lent Money to"},
     {name: "between", title: "Between"},
   ],
   fields: [
@@ -43,7 +43,7 @@ export const transactions = defineType({
     defineField({
       name: "isBorrow",
       title: "Is Lent Money",
-      group: "borrower",
+      group: "lentMoney",
       type: "boolean",
       description: "If the transaction is a lent money, select true",
       initialValue: () => false,
@@ -51,7 +51,7 @@ export const transactions = defineType({
     defineField({
       name: "borrower",
       title: "Lent Money to",
-      group: "borrower",
+      group: "lentMoney",
       type: "reference",
       to: [{type: "intermediaries"}],
       hidden: ({document}) => !document?.isBorrow,
