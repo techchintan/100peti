@@ -1,7 +1,7 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { useMemo } from "react";
+import {Bar, BarChart, CartesianGrid, XAxis, YAxis} from "recharts";
+import {useMemo} from "react";
 
 import {
   ChartConfig,
@@ -11,7 +11,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 
 export const chartConfig = {
   income: {
@@ -31,7 +31,7 @@ export const chartConfig = {
 export function IncomeExpense({
   chartData,
 }: {
-  chartData: Array<{ month: string; income: number; expense: number; lentMoney: number }>;
+  chartData: Array<{month: string; income: number; expense: number; lentMoney: number}>;
 }) {
   const total = useMemo(() => {
     return chartData.reduce(
@@ -43,15 +43,15 @@ export function IncomeExpense({
           cash: acc.income - acc.expense - acc.lentMoney,
         };
       },
-      { income: 0, expense: 0, lentMoney: 0, cash: 0 },
+      {income: 0, expense: 0, lentMoney: 0, cash: 0},
     );
   }, [chartData]);
 
   const buttons = [
-    { key: "income", label: "Income" },
-    { key: "lentMoney", label: "Lent Money" },
-    { key: "expense", label: "Expense" },
-    { key: "cash", label: "Cash at Home" },
+    {key: "income", label: "Income"},
+    {key: "lentMoney", label: "Lent Money"},
+    {key: "expense", label: "Expense"},
+    {key: "cash", label: "Cash at Home"},
   ];
 
   return (
@@ -65,13 +65,13 @@ export function IncomeExpense({
           </CardDescription>
         </div>
         <div className="flex font-sans">
-          {buttons.map(({ key, label }) => {
+          {buttons.map(({key, label}) => {
             const chart = key as keyof typeof chartConfig;
 
             return (
-              <button
+              <div
                 key={chart}
-                className="data-[active=true]:bg-muted/50 relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l sm:border-t-0 sm:border-l sm:px-8 sm:py-6"
+                className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l sm:border-t-0 sm:border-l sm:px-8 sm:py-6"
               >
                 <span className="text-muted-foreground text-sm">{label}</span>
                 <span className="text-lg leading-none font-bold sm:text-3xl">
@@ -82,7 +82,7 @@ export function IncomeExpense({
                   })}
                   /-
                 </span>
-              </button>
+              </div>
             );
           })}
         </div>

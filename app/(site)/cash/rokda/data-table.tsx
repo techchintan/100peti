@@ -26,7 +26,6 @@ import {
 import {FilterIcon} from "lucide-react";
 import {DataTablePagination} from "./pagination";
 import {chartConfig} from "../../(home)/income-expense";
-import {Transactions} from "@/sanity.types";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -133,7 +132,7 @@ export function DataTable<TData, TValue>({columns, data}: DataTableProps<TData, 
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row: Row<TData>) => {
-                const isLentMoney = (row.original as Transactions).isBorrow;
+                const isLentMoney = (row.original as {isBorrow?: boolean}).isBorrow;
                 return (
                   <TableRow
                     key={row.id}

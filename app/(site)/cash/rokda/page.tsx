@@ -2,11 +2,11 @@ import {columns} from "./columns";
 
 import {DataTable} from "./data-table";
 import {sanityFetch} from "@/sanity/lib/live";
-import {Transactions} from "@/sanity.types";
+import type {ROKDA_TRANSACTIONSResult} from "@/sanity.types";
 import {ROKDA_TRANSACTIONS} from "@/sanity/queries";
 
 export default async function RokdaPage() {
-  const {data: transactions} = await sanityFetch<Transactions[]>({
+  const {data: transactions} = await sanityFetch<ROKDA_TRANSACTIONSResult>({
     query: ROKDA_TRANSACTIONS,
     params: {
       type: "all",

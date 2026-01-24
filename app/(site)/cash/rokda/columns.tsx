@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
-import { Transactions } from "@/sanity.types";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import {ColumnDef} from "@tanstack/react-table";
+import type {ROKDA_TRANSACTIONSResult} from "@/sanity.types";
+import {cn} from "@/lib/utils";
+import {Button} from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,21 +15,23 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { CheckIcon } from "lucide-react";
-import { toast } from "sonner";
+import {CheckIcon} from "lucide-react";
+import {toast} from "sonner";
 
-export const columns: ColumnDef<Transactions>[] = [
+type RokdaRow = ROKDA_TRANSACTIONSResult[number];
+
+export const columns: ColumnDef<RokdaRow>[] = [
   {
     accessorKey: "transactionDate",
     header: "Date",
-    cell: ({ row }) => {
+    cell: ({row}) => {
       return <div>{new Date(row.original.transactionDate).toLocaleDateString("en-GB")}</div>;
     },
   },
   {
     accessorKey: "transactionAmount",
     header: "Amount",
-    cell: ({ row }) => {
+    cell: ({row}) => {
       return (
         <div
           className={cn(
@@ -51,7 +52,7 @@ export const columns: ColumnDef<Transactions>[] = [
   },
   {
     accessorKey: "transactionType",
-    header: ({ column }) => (
+    header: ({column}) => (
       <Button
         className="font-sans text-base font-bold"
         variant="ghost"
@@ -60,42 +61,36 @@ export const columns: ColumnDef<Transactions>[] = [
         Type
       </Button>
     ),
-    cell: ({ row }) => {
+    cell: ({row}) => {
       return <div className="text-center capitalize">{row.original.transactionType}</div>;
     },
   },
   {
     accessorKey: "isBorrow",
     header: "Is Lent Money?",
-    cell: ({ row }) => {
+    cell: ({row}) => {
       return row.original.isBorrow ? "Yes" : "No";
     },
   },
   {
     accessorKey: "borrower.name",
     header: "Lent Money to",
-    cell: ({ row }: { row: any }) => {
-      return <div className="capitalize">{row.original.borrower?.name || "N/A"}</div>;
-    },
+    cell: ({row}) => <div className="capitalize">{row.original.borrower?.name || "N/A"}</div>,
   },
   {
     accessorKey: "sender.name",
     header: "Sender",
-    cell: ({ row }: { row: any }) => {
-      return <div className="capitalize">{row.original.sender?.name || "N/A"}</div>;
-    },
+    cell: ({row}) => <div className="capitalize">{row.original.sender?.name || "N/A"}</div>,
   },
   {
     accessorKey: "receiver.name",
     header: "Receiver",
-    cell: ({ row }: { row: any }) => {
-      return <div className="capitalize">{row.original.receiver?.name || "N/A"}</div>;
-    },
+    cell: ({row}) => <div className="capitalize">{row.original.receiver?.name || "N/A"}</div>,
   },
   {
     accessorKey: "transactionDescription",
     header: "Note",
-    cell: ({ row }) => {
+    cell: ({row}) => {
       return (
         <div
           className="max-w-[320px] truncate capitalize"
@@ -109,7 +104,7 @@ export const columns: ColumnDef<Transactions>[] = [
   {
     accessorKey: "action",
     header: "Action",
-    cell: ({ row }) => {
+    cell: ({row}) => {
       return row.original.isBorrow ? (
         <div className="flex items-center gap-2 capitalize">
           <AlertDialog>
