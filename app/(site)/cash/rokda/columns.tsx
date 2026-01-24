@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import {ColumnDef} from "@tanstack/react-table";
-import {Transactions} from "@/sanity.types";
-import {cn} from "@/lib/utils";
-import {Button} from "@/components/ui/button";
+import { ColumnDef } from "@tanstack/react-table";
+import { Transactions } from "@/sanity.types";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,21 +16,21 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {CheckIcon} from "lucide-react";
-import {toast} from "sonner";
+import { CheckIcon } from "lucide-react";
+import { toast } from "sonner";
 
 export const columns: ColumnDef<Transactions>[] = [
   {
     accessorKey: "transactionDate",
-    header: "Transaction Date",
-    cell: ({row}) => {
+    header: "Date",
+    cell: ({ row }) => {
       return <div>{new Date(row.original.transactionDate).toLocaleDateString("en-GB")}</div>;
     },
   },
   {
     accessorKey: "transactionAmount",
-    header: "Transaction Amount",
-    cell: ({row}) => {
+    header: "Amount",
+    cell: ({ row }) => {
       return (
         <div
           className={cn(
@@ -51,51 +51,51 @@ export const columns: ColumnDef<Transactions>[] = [
   },
   {
     accessorKey: "transactionType",
-    header: ({column}) => (
+    header: ({ column }) => (
       <Button
         className="font-sans text-base font-bold"
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        Transaction Type
+        Type
       </Button>
     ),
-    cell: ({row}) => {
+    cell: ({ row }) => {
       return <div className="text-center capitalize">{row.original.transactionType}</div>;
     },
   },
   {
     accessorKey: "isBorrow",
-    header: "Is Borrow",
-    cell: ({row}) => {
+    header: "Is Lent Money?",
+    cell: ({ row }) => {
       return row.original.isBorrow ? "Yes" : "No";
     },
   },
   {
     accessorKey: "borrower.name",
-    header: "Borrower",
-    cell: ({row}: {row: any}) => {
+    header: "Lent Money to",
+    cell: ({ row }: { row: any }) => {
       return <div className="capitalize">{row.original.borrower?.name || "N/A"}</div>;
     },
   },
   {
     accessorKey: "sender.name",
     header: "Sender",
-    cell: ({row}: {row: any}) => {
+    cell: ({ row }: { row: any }) => {
       return <div className="capitalize">{row.original.sender?.name || "N/A"}</div>;
     },
   },
   {
     accessorKey: "receiver.name",
     header: "Receiver",
-    cell: ({row}: {row: any}) => {
+    cell: ({ row }: { row: any }) => {
       return <div className="capitalize">{row.original.receiver?.name || "N/A"}</div>;
     },
   },
   {
     accessorKey: "transactionDescription",
-    header: "Transaction Description",
-    cell: ({row}) => {
+    header: "Note",
+    cell: ({ row }) => {
       return (
         <div
           className="max-w-[320px] truncate capitalize"
@@ -109,7 +109,7 @@ export const columns: ColumnDef<Transactions>[] = [
   {
     accessorKey: "action",
     header: "Action",
-    cell: ({row}) => {
+    cell: ({ row }) => {
       return row.original.isBorrow ? (
         <div className="flex items-center gap-2 capitalize">
           <AlertDialog>
@@ -122,7 +122,7 @@ export const columns: ColumnDef<Transactions>[] = [
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will mark this transaction as not borrowed. This action cannot be undone.
+                  This will mark this transaction as not lent money. This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

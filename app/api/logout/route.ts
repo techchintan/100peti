@@ -1,6 +1,6 @@
-import { cookies } from "next/headers";
-import { getIronSession } from "iron-session";
-import { sessionOptions } from "@/lib/session";
+import {cookies} from "next/headers";
+import {getIronSession} from "iron-session";
+import {sessionOptions} from "@/lib/session";
 
 export async function POST() {
   const session = await getIronSession(await cookies(), sessionOptions);

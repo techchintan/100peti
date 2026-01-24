@@ -87,26 +87,26 @@ export function LoginForm({className, ...props}: React.ComponentProps<"div">) {
                 </blockquote>
               </div>
               {error && (
-                <div className="text-destructive text-sm text-center bg-destructive/10 p-3 rounded-md">
+                <div className="text-destructive bg-destructive/10 rounded-md p-3 text-center text-sm">
                   {error}
                 </div>
               )}
               <div className="grid gap-3">
                 <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
+                <Input
+                  id="email"
+                  type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  required 
+                  required
                 />
                 <Label htmlFor="password">Password</Label>
-                <Input 
-                  id="password" 
-                  type="password" 
+                <Input
+                  id="password"
+                  type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required 
+                  required
                 />
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>

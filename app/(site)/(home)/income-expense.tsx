@@ -22,8 +22,8 @@ export const chartConfig = {
     label: "Expense",
     color: "#ff0000",
   },
-  borrow: {
-    label: "Borrow",
+  lentMoney: {
+    label: "Lent Money",
     color: "#ffa500",
   },
 } satisfies ChartConfig;
@@ -31,7 +31,7 @@ export const chartConfig = {
 export function IncomeExpense({
   chartData,
 }: {
-  chartData: Array<{ month: string; income: number; expense: number; borrow: number }>;
+  chartData: Array<{ month: string; income: number; expense: number; lentMoney: number }>;
 }) {
   const total = useMemo(() => {
     return chartData.reduce(
@@ -39,17 +39,17 @@ export function IncomeExpense({
         return {
           income: acc.income + curr.income,
           expense: acc.expense + curr.expense,
-          borrow: acc.borrow + curr.borrow,
-          cash: acc.income - acc.expense - acc.borrow,
+          lentMoney: acc.lentMoney + curr.lentMoney,
+          cash: acc.income - acc.expense - acc.lentMoney,
         };
       },
-      { income: 0, expense: 0, borrow: 0, cash: 0 },
+      { income: 0, expense: 0, lentMoney: 0, cash: 0 },
     );
   }, [chartData]);
 
   const buttons = [
     { key: "income", label: "Income" },
-    { key: "borrow", label: "Borrow" },
+    { key: "lentMoney", label: "Lent Money" },
     { key: "expense", label: "Expense" },
     { key: "cash", label: "Cash at Home" },
   ];
@@ -73,9 +73,7 @@ export function IncomeExpense({
                 key={chart}
                 className="data-[active=true]:bg-muted/50 relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l sm:border-t-0 sm:border-l sm:px-8 sm:py-6"
               >
-                <span className="text-muted-foreground text-sm">
-                  {label}
-                </span>
+                <span className="text-muted-foreground text-sm">{label}</span>
                 <span className="text-lg leading-none font-bold sm:text-3xl">
                   {total[key as keyof typeof total].toLocaleString("en-IN", {
                     style: "currency",
@@ -112,7 +110,7 @@ export function IncomeExpense({
             <ChartLegend content={<ChartLegendContent />} />
             <Bar dataKey="income" fill="var(--color-income)" radius={4} />
             <Bar dataKey="expense" fill="var(--color-expense)" radius={4} />
-            <Bar dataKey="borrow" fill="var(--color-borrow)" radius={4} />
+            <Bar dataKey="lentMoney" fill="var(--color-lentMoney)" radius={4} />
           </BarChart>
         </ChartContainer>
       </CardContent>

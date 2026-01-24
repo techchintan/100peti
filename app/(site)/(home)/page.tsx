@@ -1,10 +1,10 @@
-import { Transactions } from "@/sanity.types";
-import { sanityFetch } from "@/sanity/lib/live";
-import { ROKDA_TRANSACTIONS } from "@/sanity/queries";
-import { IncomeExpense } from "./income-expense";
+import {Transactions} from "@/sanity.types";
+import {sanityFetch} from "@/sanity/lib/live";
+import {ROKDA_TRANSACTIONS} from "@/sanity/queries";
+import {IncomeExpense} from "./income-expense";
 
 export default async function HomePage() {
-  const { data: transactions } = await sanityFetch<Transactions[]>({
+  const {data: transactions} = await sanityFetch<Transactions[]>({
     query: ROKDA_TRANSACTIONS,
     params: {
       type: "all",
@@ -26,7 +26,7 @@ export default async function HomePage() {
             existingMonth.income += transaction.transactionAmount;
           } else if (transaction.transactionType === "expense") {
             if (transaction.isBorrow) {
-              existingMonth.borrow += transaction.transactionAmount;
+              existingMonth.lentMoney += transaction.transactionAmount;
             } else {
               existingMonth.expense += transaction.transactionAmount;
             }
@@ -35,14 +35,20 @@ export default async function HomePage() {
           acc.push({
             month: monthYear,
             income: transaction.transactionType === "income" ? transaction.transactionAmount : 0,
-            expense: transaction.transactionType === "expense" && !transaction.isBorrow ? transaction.transactionAmount : 0,
-            borrow: transaction.transactionType === "expense" && transaction.isBorrow ? transaction.transactionAmount : 0,
+            expense:
+              transaction.transactionType === "expense" && !transaction.isBorrow
+                ? transaction.transactionAmount
+                : 0,
+            lentMoney:
+              transaction.transactionType === "expense" && transaction.isBorrow
+                ? transaction.transactionAmount
+                : 0,
           });
         }
 
         return acc;
       },
-      [] as Array<{ month: string; income: number; expense: number; borrow: number }>,
+      [] as Array<{month: string; income: number; expense: number; lentMoney: number}>,
     )
     .sort((a, b) => {
       const dateA = new Date(a.month);

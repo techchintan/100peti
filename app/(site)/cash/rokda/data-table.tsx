@@ -12,10 +12,10 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { useState } from "react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import {useState} from "react";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -23,17 +23,17 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FilterIcon } from "lucide-react";
-import { DataTablePagination } from "./pagination";
-import { chartConfig } from "../../(home)/income-expense";
-import { Transactions } from "@/sanity.types";
+import {FilterIcon} from "lucide-react";
+import {DataTablePagination} from "./pagination";
+import {chartConfig} from "../../(home)/income-expense";
+import {Transactions} from "@/sanity.types";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({columns, data}: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
@@ -73,7 +73,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
     <div>
       <div className="flex items-center justify-between py-4">
         <Input
-          placeholder="Filter by sender, receiver or borrower..."
+          placeholder="Filter by sender, receiver or lent money to..."
           value={globalFilter ?? ""}
           onChange={(event) => setGlobalFilter(event.target.value)}
           className="max-w-lg"
@@ -139,7 +139,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
                     style={{
-                      color: isBorrowed ? chartConfig.borrow.color : "inherit",
+                      color: isBorrowed ? chartConfig.lentMoney.color : "inherit",
                     }}
                   >
                     {row.getVisibleCells().map((cell) => (

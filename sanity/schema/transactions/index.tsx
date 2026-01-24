@@ -1,14 +1,14 @@
-import { defineField } from "sanity";
-import { defineType } from "sanity";
+import {defineField} from "sanity";
+import {defineType} from "sanity";
 
 export const transactions = defineType({
   name: "transactions",
   title: "Transactions",
   type: "document",
   groups: [
-    { name: "details", title: "Details" },
-    { name: "borrower", title: "Borrower" },
-    { name: "between", title: "Between" },
+    {name: "details", title: "Details"},
+    {name: "borrower", title: "Lent Money to"},
+    {name: "between", title: "Between"},
   ],
   fields: [
     defineField({
@@ -35,26 +35,26 @@ export const transactions = defineType({
       validation: (Rule) => Rule.required(),
       options: {
         list: [
-          { title: "Income", value: "income" },
-          { title: "Expense", value: "expense" },
+          {title: "Income", value: "income"},
+          {title: "Expense", value: "expense"},
         ],
       },
     }),
     defineField({
       name: "isBorrow",
-      title: "Is Borrow",
+      title: "Is Lent Money",
       group: "borrower",
       type: "boolean",
-      description: "If the transaction is a borrow, select true",
+      description: "If the transaction is a lent money, select true",
       initialValue: () => false,
     }),
     defineField({
       name: "borrower",
-      title: "Borrower",
+      title: "Lent Money to",
       group: "borrower",
       type: "reference",
-      to: [{ type: "intermediaries" }],
-      hidden: ({ document }) => !document?.isBorrow,
+      to: [{type: "intermediaries"}],
+      hidden: ({document}) => !document?.isBorrow,
     }),
     defineField({
       name: "sender",
@@ -62,7 +62,7 @@ export const transactions = defineType({
       description: "Who is sending the money",
       group: "between",
       type: "reference",
-      to: [{ type: "intermediaries" }],
+      to: [{type: "intermediaries"}],
     }),
     defineField({
       name: "receiver",
@@ -70,7 +70,7 @@ export const transactions = defineType({
       description: "Who is receiving the money",
       group: "between",
       type: "reference",
-      to: [{ type: "intermediaries" }],
+      to: [{type: "intermediaries"}],
     }),
     defineField({
       name: "transactionDescription",
@@ -90,7 +90,7 @@ export const transactions = defineType({
       transactionType: "transactionType",
     },
     prepare: (value) => {
-      const { _id, date, amount, sender, receiver, transactionType } = value;
+      const {_id, date, amount, sender, receiver, transactionType} = value;
 
       return {
         _id: _id,
