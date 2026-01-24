@@ -125,7 +125,7 @@ export function LoginForm({className, ...props}: React.ComponentProps<"div">) {
                 className="object-cover object-center"
                 style={{objectPosition: "center top"}}
               />
-              <div className="to-primary/20 pointer-events-none absolute inset-0 animate-pulse bg-gradient-to-br from-transparent via-white/10" />
+              <div className="to-primary/20 pointer-events-none absolute inset-0 animate-pulse bg-linear-to-br from-transparent via-white/10" />
             </div>
           </div>
         </CardContent>

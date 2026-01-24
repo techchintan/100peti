@@ -11,7 +11,7 @@ type Props = Omit<ImageProps, "src"> & {
 
 export const SanityImage = ({src, alt, ref, onLoad, ...props}: Props) => {
   // Ensure alt is not undefined or empty, fallback to "Image" if it is
-  const altText = alt || "Mike Jones Auctioneers";
+  const altText = alt || "Chintan Sudani Developer, Tinkerer, Human";
 
   return (
     <Image
