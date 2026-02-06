@@ -3,11 +3,19 @@ import {sanityFetch} from "@/sanity/lib/live";
 import {ROKDA_TRANSACTIONS} from "@/sanity/queries";
 import {IncomeExpense} from "./income-expense";
 
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+export const revalidate = 0;
+
 export default async function HomePage() {
   const {data: transactions} = await sanityFetch<Transactions[]>({
     query: ROKDA_TRANSACTIONS,
     params: {
       type: "all",
+    },
+    options: {
+      cache: "no-store",
+      next: {revalidate: 0, tags: []},
     },
   });
 
