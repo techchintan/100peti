@@ -23,8 +23,8 @@ export default async function HomePage() {
     ?.reduce(
       (acc, transaction) => {
         const date = new Date(transaction.transactionDate);
-        const monthYear = `${date.toLocaleDateString("en-GB", {
-          month: "long",
+        const monthYear = `${date.toLocaleDateString("en-IN", {
+          month: "short",
         })} ${date.getFullYear()}`;
 
         const existingMonth = acc.find((item) => item.month === monthYear);
