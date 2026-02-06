@@ -4,7 +4,7 @@ import "../globals.css";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import {Settings as SettingsType} from "@/sanity.types";
-import {sanityFetch} from "@/sanity/lib/live";
+import {sanityFetch, SanityLive} from "@/sanity/lib/live";
 import {SETTINGS} from "@/sanity/queries";
 import {Toaster} from "@/components/ui/sonner";
 
@@ -46,6 +46,7 @@ export default async function RootLayout({
           <Toaster />
         </div>
         <Footer {...settings} />
+        <SanityLive />
       </body>
     </html>
   );
