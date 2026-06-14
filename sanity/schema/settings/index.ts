@@ -1,22 +1,15 @@
 import {defineField, defineType} from "sanity";
 
+import {StudioIcons} from "@/sanity/studio/icons";
+
 export const settings = defineType({
-  title: "Settings",
+  title: "Site Settings",
   name: "settings",
   type: "document",
+  icon: StudioIcons.settings,
   groups: [
-    {
-      name: "brand",
-      title: "Brand",
-    },
-    {
-      name: "header",
-      title: "Header",
-    },
-    {
-      name: "footer",
-      title: "Footer",
-    },
+    {name: "brand", title: "Brand", default: true},
+    {name: "header", title: "Navigation"},
   ],
   fields: [
     defineField({
@@ -27,14 +20,15 @@ export const settings = defineType({
       fields: [
         defineField({
           name: "name",
-          title: "Name",
+          title: "Family / Site Name",
           type: "string",
+          validation: (Rule) => Rule.required(),
         }),
       ],
     }),
     defineField({
       name: "header",
-      title: "Header",
+      title: "Header Navigation",
       group: "header",
       type: "object",
       fields: [
@@ -52,11 +46,13 @@ export const settings = defineType({
                   name: "label",
                   title: "Label",
                   type: "string",
+                  validation: (Rule) => Rule.required(),
                 }),
                 defineField({
                   name: "link",
                   title: "Link",
                   type: "string",
+                  validation: (Rule) => Rule.required(),
                 }),
                 defineField({
                   name: "submenu",
@@ -72,17 +68,25 @@ export const settings = defineType({
                           name: "label",
                           title: "Label",
                           type: "string",
+                          validation: (Rule) => Rule.required(),
                         }),
                         defineField({
                           name: "link",
                           title: "Link",
                           type: "string",
+                          validation: (Rule) => Rule.required(),
                         }),
                       ],
+                      preview: {
+                        select: {title: "label", subtitle: "link"},
+                      },
                     }),
                   ],
                 }),
               ],
+              preview: {
+                select: {title: "label", subtitle: "link"},
+              },
             }),
           ],
         }),
@@ -90,8 +94,11 @@ export const settings = defineType({
     }),
   ],
   preview: {
-    select: {
-      title: "brand.name",
-    },
+    select: {title: "brand.name"},
+    prepare: ({title}) => ({
+      title: title || "Site Settings",
+      subtitle: "Navigation & branding",
+      media: StudioIcons.settings,
+    }),
   },
 });

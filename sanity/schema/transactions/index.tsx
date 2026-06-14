@@ -1,14 +1,52 @@
-import {defineField} from "sanity";
-import {defineType} from "sanity";
+"use client";
+
+import {defineField, defineType} from "sanity";
+
+import {StudioIcons} from "@/sanity/studio/icons";
+import {TransactionPreview} from "@/sanity/studio/TransactionPreview";
+
+const formatInr = (amount?: number) =>
+  (amount ?? 0).toLocaleString("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  });
 
 export const transactions = defineType({
   name: "transactions",
   title: "Transactions",
   type: "document",
+  icon: StudioIcons.receipt,
+  __experimental_formPreviewTitle: false,
+  components: {
+    preview: TransactionPreview,
+  },
   groups: [
-    {name: "details", title: "Details"},
-    {name: "lentMoney", title: "Lent Money to"},
+    {name: "details", title: "Details", default: true},
+    {name: "lentMoney", title: "Lent Money"},
     {name: "between", title: "Between"},
+  ],
+  orderings: [
+    {
+      title: "Date (newest first)",
+      name: "dateDesc",
+      by: [{field: "transactionDate", direction: "desc"}],
+    },
+    {
+      title: "Date (oldest first)",
+      name: "dateAsc",
+      by: [{field: "transactionDate", direction: "asc"}],
+    },
+    {
+      title: "Amount (high to low)",
+      name: "amountDesc",
+      by: [{field: "transactionAmount", direction: "desc"}],
+    },
+    {
+      title: "Amount (low to high)",
+      name: "amountAsc",
+      by: [{field: "transactionAmount", direction: "asc"}],
+    },
   ],
   fields: [
     defineField({
@@ -19,21 +57,16 @@ export const transactions = defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: "transactionAmount",
-      title: "Transaction Amount",
-      group: "details",
-      type: "number",
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
       name: "transactionType",
       title: "Transaction Type",
       group: "details",
       type: "string",
-      description: "Income or Expense",
+      description: "Income adds cash. Expense removes cash.",
       initialValue: () => "income",
       validation: (Rule) => Rule.required(),
       options: {
+        layout: "radio",
+        direction: "horizontal",
         list: [
           {title: "Income", value: "income"},
           {title: "Expense", value: "expense"},
@@ -41,12 +74,34 @@ export const transactions = defineType({
       },
     }),
     defineField({
+      name: "transactionAmount",
+      title: "Amount (INR)",
+      group: "details",
+      type: "number",
+      description: "Enter amount in rupees without commas.",
+      validation: (Rule) => Rule.required().positive().precision(0),
+    }),
+    defineField({
+      name: "transactionDescription",
+      title: "Description",
+      group: "details",
+      type: "text",
+      rows: 4,
+    }),
+    defineField({
       name: "isBorrow",
       title: "Is Lent Money",
       group: "lentMoney",
       type: "boolean",
-      description: "If the transaction is a lent money, select true",
+      description: "Money lent to someone. Counts under Lent Money on the dashboard.",
       initialValue: () => false,
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          if (value && context.document?.transactionType !== "expense") {
+            return "Lent money must use transaction type Expense";
+          }
+          return true;
+        }),
     }),
     defineField({
       name: "borrower",
@@ -55,6 +110,13 @@ export const transactions = defineType({
       type: "reference",
       to: [{type: "intermediaries"}],
       hidden: ({document}) => !document?.isBorrow,
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          if (context.document?.isBorrow && !value) {
+            return "Select who received the lent money";
+          }
+          return true;
+        }),
     }),
     defineField({
       name: "sender",
@@ -72,103 +134,50 @@ export const transactions = defineType({
       type: "reference",
       to: [{type: "intermediaries"}],
     }),
-    defineField({
-      name: "transactionDescription",
-      title: "Transaction Description",
-      group: "details",
-      type: "text",
-      rows: 4,
-    }),
   ],
   preview: {
     select: {
-      _id: "_id",
-      date: "transactionDate",
-      amount: "transactionAmount",
+      transactionDate: "transactionDate",
+      transactionAmount: "transactionAmount",
       sender: "sender.name",
       receiver: "receiver.name",
+      borrower: "borrower.name",
       transactionType: "transactionType",
+      isBorrow: "isBorrow",
+      transactionDescription: "transactionDescription",
     },
-    prepare: (value) => {
-      const {_id, date, amount, sender, receiver, transactionType} = value;
+    prepare: ({
+      transactionDate,
+      transactionAmount,
+      sender,
+      receiver,
+      borrower,
+      transactionType,
+      isBorrow,
+      transactionDescription,
+    }) => {
+      const isLent = Boolean(isBorrow);
+      const prefix = transactionType === "income" ? "+" : "-";
+      const parties = isLent
+        ? `Lent to ${borrower ?? "unknown"}`
+        : `Between ${sender ?? "?"} → ${receiver ?? "?"}`;
 
       return {
-        _id: _id,
-        title: `${transactionType === "income" ? "+" : "-"} ${amount.toLocaleString("en-IN", {
-          style: "currency",
-          currency: "INR",
-          maximumFractionDigits: 0,
-        })}`,
-        subtitle: `On ${new Date(date).toLocaleDateString("en-GB")} b/w ${sender} and ${receiver}`,
-        description: transactionType,
-        media:
-          transactionType === "income" ? (
-            <svg
-              width="64px"
-              height="64px"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-              <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
-              <g id="SVGRepo_iconCarrier">
-                {" "}
-                <path
-                  d="M3 12C3 4.5885 4.5885 3 12 3C19.4115 3 21 4.5885 21 12C21 19.4115 19.4115 21 12 21C4.5885 21 3 19.4115 3 12Z"
-                  stroke="#008000"
-                  strokeWidth="2"
-                ></path>{" "}
-                <path
-                  d="M12 17L9.12186 14.1219V14.1219C9.07689 14.0769 9.11206 13.9992 9.17562 13.9971C13.9993 13.8351 13.9408 7 9 7H15"
-                  stroke="#008000"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                ></path>{" "}
-                <path
-                  d="M9 10.5H15"
-                  stroke="#008000"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                ></path>{" "}
-              </g>
-            </svg>
-          ) : (
-            <svg
-              width="64px"
-              height="64px"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-              <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
-              <g id="SVGRepo_iconCarrier">
-                {" "}
-                <path
-                  d="M3 12C3 4.5885 4.5885 3 12 3C19.4115 3 21 4.5885 21 12C21 19.4115 19.4115 21 12 21C4.5885 21 3 19.4115 3 12Z"
-                  stroke="#FF0000"
-                  strokeWidth="2"
-                ></path>{" "}
-                <path
-                  d="M12 17L9.12186 14.1219V14.1219C9.07689 14.0769 9.11206 13.9992 9.17562 13.9971C13.9993 13.8351 13.9408 7 9 7H15"
-                  stroke="#FF0000"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                ></path>{" "}
-                <path
-                  d="M9 10.5H15"
-                  stroke="#FF0000"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                ></path>{" "}
-              </g>
-            </svg>
-          ),
+        title: `${prefix} ${formatInr(transactionAmount)}`,
+        subtitle: `${transactionDate ? new Date(transactionDate).toLocaleDateString("en-IN") : "No date"} · ${parties}`,
+        media: isLent
+          ? StudioIcons.lentPreview
+          : transactionType === "income"
+            ? StudioIcons.incomePreview
+            : StudioIcons.expensePreview,
+        transactionDate,
+        transactionAmount,
+        sender,
+        receiver,
+        borrower,
+        transactionType,
+        isBorrow,
+        transactionDescription,
       };
     },
   },
