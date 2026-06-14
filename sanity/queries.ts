@@ -21,8 +21,16 @@ export const PORTFOLIO_SUMMARY = groq`{
     - math::sum(*[_type == "transactions" && transactionType == "expense" && !isBorrow].transactionAmount)
     - math::sum(*[_type == "transactions" && transactionType == "expense" && isBorrow].transactionAmount)
   ),
-  "notesValue": math::sum(*[_type == "cashNotes"].denomination * quantity),
+  "notesValue": math::sum(*[_type == "cashNotes"].denomination * (
+    select(
+      defined(bundles100) || defined(bundles50) || defined(bundles) || defined(looseNotes) =>
+        coalesce(bundles100, bundles, 0) * 100 + coalesce(bundles50, 0) * 50 + coalesce(looseNotes, 0),
+      coalesce(quantity, 0)
+    )
+  )),
   "notesCount": count(*[_type == "cashNotes"]),
+  "notesBundles100": math::sum(*[_type == "cashNotes"]{"n": coalesce(bundles100, bundles, 0)}.n),
+  "notesBundles50": math::sum(*[_type == "cashNotes"]{"n": coalesce(bundles50, 0)}.n),
   "tradingValue": math::sum(*[_type == "tradingInvestment" && status == "active"].currentValue),
   "tradingInvested": math::sum(*[_type == "tradingInvestment" && status == "active"].investedAmount),
   "tradingCount": count(*[_type == "tradingInvestment" && status == "active"]),
@@ -52,11 +60,22 @@ export const ROKDA_TRANSACTIONS = groq`*[_type == "transactions" && ($type == "a
 export const CASH_NOTES = groq`*[_type == "cashNotes"] | order(denomination desc) {
   _id,
   denomination,
-  quantity,
-  location,
+  bundles100,
+  bundles50,
+  looseNotes,
   lastCounted,
   notes,
-  "totalValue": denomination * quantity
+  "bundles100Count": coalesce(bundles100, bundles, 0),
+  "quantity": select(
+    defined(bundles100) || defined(bundles50) || defined(bundles) || defined(looseNotes) =>
+      coalesce(bundles100, bundles, 0) * 100 + coalesce(bundles50, 0) * 50 + coalesce(looseNotes, 0),
+    coalesce(quantity, 0)
+  ),
+  "totalValue": denomination * select(
+    defined(bundles100) || defined(bundles50) || defined(bundles) || defined(looseNotes) =>
+      coalesce(bundles100, bundles, 0) * 100 + coalesce(bundles50, 0) * 50 + coalesce(looseNotes, 0),
+    coalesce(quantity, 0)
+  )
 }`;
 
 export const TRADING_INVESTMENTS = groq`*[_type == "tradingInvestment"] | order(currentValue desc) {
