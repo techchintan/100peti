@@ -1,7 +1,6 @@
 "use client";
 
 import {Bar, BarChart, CartesianGrid, XAxis, YAxis} from "recharts";
-import {useMemo} from "react";
 
 import {
   ChartConfig,
@@ -30,23 +29,11 @@ export const chartConfig = {
 
 export function IncomeExpense({
   chartData,
+  totals,
 }: {
   chartData: Array<{month: string; income: number; expense: number; lentMoney: number}>;
+  totals: {income: number; expense: number; lentMoney: number; cash: number};
 }) {
-  const total = useMemo(() => {
-    return chartData.reduce(
-      (acc, curr) => {
-        return {
-          income: acc.income + curr.income,
-          expense: acc.expense + curr.expense,
-          lentMoney: acc.lentMoney + curr.lentMoney,
-          cash: acc.income - acc.expense - acc.lentMoney,
-        };
-      },
-      {income: 0, expense: 0, lentMoney: 0, cash: 0},
-    );
-  }, [chartData]);
-
   const buttons = [
     {key: "income", label: "Income"},
     {key: "lentMoney", label: "Lent Money"},
@@ -75,7 +62,7 @@ export function IncomeExpense({
               >
                 <span className="text-muted-foreground text-sm">{label}</span>
                 <span className="text-lg leading-none font-bold sm:text-3xl">
-                  {total[key as keyof typeof total].toLocaleString("en-IN", {
+                  {totals[key as keyof typeof totals].toLocaleString("en-IN", {
                     style: "currency",
                     currency: "INR",
                     maximumFractionDigits: 0,

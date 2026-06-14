@@ -1,23 +1,38 @@
 import {Transactions} from "@/sanity.types";
 import {sanityFetch} from "@/sanity/lib/live";
-import {ROKDA_TRANSACTIONS} from "@/sanity/queries";
+import {DASHBOARD_TOTALS, ROKDA_TRANSACTIONS} from "@/sanity/queries";
 import {IncomeExpense} from "./income-expense";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 export const revalidate = 0;
 
+type DashboardTotals = {
+  income: number;
+  expense: number;
+  lentMoney: number;
+  cash: number;
+};
+
 export default async function HomePage() {
-  const {data: transactions} = await sanityFetch<Transactions[]>({
-    query: ROKDA_TRANSACTIONS,
-    params: {
-      type: "all",
-    },
-    options: {
-      cache: "no-store",
-      next: {revalidate: 0, tags: []},
-    },
-  });
+  const [{data: transactions}, {data: totals}] = await Promise.all([
+    sanityFetch<Transactions[]>({
+      query: ROKDA_TRANSACTIONS,
+      params: {type: "all"},
+      options: {cache: "no-store", next: {revalidate: 0, tags: []}},
+    }),
+    sanityFetch<DashboardTotals>({
+      query: DASHBOARD_TOTALS,
+      options: {cache: "no-store", next: {revalidate: 0, tags: []}},
+    }),
+  ]);
+
+  const summary = {
+    income: totals?.income ?? 0,
+    expense: totals?.expense ?? 0,
+    lentMoney: totals?.lentMoney ?? 0,
+    cash: totals?.cash ?? 0,
+  };
 
   const chartData = transactions
     ?.reduce(
@@ -69,7 +84,7 @@ export default async function HomePage() {
       <h2 className="text-secondary mb-4 text-3xl font-light italic">
         Wealth Management Dashboard
       </h2>
-      <IncomeExpense chartData={chartData} />
+      <IncomeExpense chartData={chartData} totals={summary} />
     </section>
   );
 }
