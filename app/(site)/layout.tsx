@@ -24,11 +24,17 @@ const poppins = Poppins({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: "Chintan Sudani - Developer, Tinkerer, Human",
-  description:
-    "Hi, I'm Chintan Sudani. A visionary developer and creative tinkerer, driven by a passion for coding and its endless possibilities.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const {data: settings} = await sanityFetch<SettingsType>({query: SETTINGS});
+
+  return {
+    title: {
+      default: `${settings?.brand?.name || "Sudani Family"} Finance`,
+      template: `%s · ${settings?.brand?.name || "Sudani Family"}`,
+    },
+    description: "Private family wealth dashboard for cash, notes, trading, and gold.",
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -39,8 +45,8 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={`${ebGaramond.variable} ${poppins.variable} bg-white-smoke antialiased`}>
-        <div className="container">
+      <body className={`${ebGaramond.variable} ${poppins.variable} bg-zinc-50 antialiased`}>
+        <div className="container min-h-screen">
           <Header {...settings} />
           <main>{children}</main>
           <Toaster />

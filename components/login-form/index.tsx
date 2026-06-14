@@ -1,45 +1,16 @@
 "use client";
 
-import {cn} from "@/lib/utils";
-import {Alert, AlertDescription} from "@/components/ui/alert";
-import {Button} from "@/components/ui/button";
-import {Card, CardContent} from "@/components/ui/card";
-import {Input} from "@/components/ui/input";
-import {Label} from "@/components/ui/label";
-import Image from "next/image";
-import {useEffect, useState} from "react";
-import {useRouter} from "next/navigation";
+import { IndianRupee } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
-const coolQuotes = [
-  {
-    quote: `Success is not just about making money. It's about making a difference.`,
-    author: "Millionaire Mindset",
-  },
-  {
-    quote: `The only limit to our realization of tomorrow is our doubts of today.`,
-    author: "Franklin D. Roosevelt",
-  },
-  {
-    quote: `Dream big and dare to fail.`,
-    author: "Norman Vaughan",
-  },
-  {
-    quote: `Opportunities don't happen, you create them.`,
-    author: "Chris Grosser",
-  },
-  {
-    quote: `Do something today that your future self will thank you for.`,
-    author: "Sean Patrick Flanery",
-  },
-];
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-function getRandomQuote() {
-  const idx = Math.floor(Math.random() * coolQuotes.length);
-  return coolQuotes[idx];
-}
-
-export function LoginForm({className, ...props}: React.ComponentProps<"div">) {
-  const [quoteObj, setQuoteObj] = useState<{quote: string; author: string} | null>(null);
+export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -47,7 +18,8 @@ export function LoginForm({className, ...props}: React.ComponentProps<"div">) {
   const router = useRouter();
 
   useEffect(() => {
-    setQuoteObj(getRandomQuote());
+    setEmail("");
+    setPassword("");
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,17 +30,15 @@ export function LoginForm({className, ...props}: React.ComponentProps<"div">) {
     try {
       const response = await fetch("/api/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({email, password}),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
 
       if (response.ok) {
         router.push("/");
         router.refresh();
       } else {
-        setError("Invalid password");
+        setError("Invalid email or password");
       }
     } catch {
       setError("Login failed. Please try again.");
@@ -78,69 +48,63 @@ export function LoginForm({className, ...props}: React.ComponentProps<"div">) {
   };
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="overflow-hidden p-0">
-        <CardContent className="grid p-0 md:grid-cols-2">
-          <form className="p-6 md:p-8" onSubmit={handleSubmit}>
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col items-center text-center">
-                <h1 className="text-2xl font-bold">Welcome back</h1>
-                <p className="text-muted-foreground text-balance">Login to 100 Peti account</p>
-                <blockquote className="text-primary mt-4 text-sm italic">
-                  {quoteObj ? (
-                    <>
-                      &quot;{quoteObj.quote}&quot; <br />
-                      <span className="text-muted-foreground text-xs">— {quoteObj.author}</span>
-                    </>
-                  ) : (
-                    <>&nbsp;</>
-                  )}
-                </blockquote>
-              </div>
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              <div className="grid gap-3">
+    <Card className="overflow-hidden py-0 rounded-2xl border shadow-lg">
+      <CardContent className="grid p-0 md:grid-cols-5">
+        <div className="relative hidden bg-linear-to-br from-zinc-900 via-zinc-800 to-emerald-900 p-8 text-white md:col-span-2 md:flex md:flex-col md:justify-between">
+          <div>
+            <IndianRupee className="size-10 opacity-90" />
+            <h2 className="mt-6 font-serif text-2xl font-semibold">Sudani Finance</h2>
+            <p className="mt-2 text-sm leading-relaxed text-zinc-300">
+              Private access to family wealth — cash, notes, trading, and gold.
+            </p>
+          </div>
+          <p className="text-xs text-zinc-400">Authorized members only</p>
+        </div>
+
+        <form className="p-6 md:col-span-3 md:p-8" onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-6">
+            <div className="space-y-1">
+              <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
+              <p className="text-muted-foreground text-sm">Enter your credentials to continue</p>
+            </div>
+
+            {error ? (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            ) : null}
+
+            <div className="grid gap-4">
+              <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
+              </div>
+              <div className="grid gap-2">
                 <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Logging in..." : "Login"}
-              </Button>
             </div>
-          </form>
-          <div className="bg-muted relative hidden md:block">
-            <div className="absolute inset-0">
-              <Image
-                src="/chintan.webp"
-                alt="Profile Picture"
-                fill
-                sizes="(min-width: 768px) 50vw, 100vw"
-                priority
-                className="object-cover object-center"
-                style={{objectPosition: "center top"}}
-              />
-              <div className="to-primary/20 pointer-events-none absolute inset-0 animate-pulse bg-linear-to-br from-transparent via-white/10" />
-            </div>
+
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Signing in…" : "Sign in"}
+            </Button>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 }

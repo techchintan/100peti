@@ -71,6 +71,40 @@ export const structure: StructureResolver = (S) =>
         ),
       S.divider(),
       S.listItem()
+        .title("Wealth")
+        .icon(StudioIcons.gold)
+        .child(
+          S.list()
+            .title("Wealth")
+            .items([
+              S.listItem()
+                .title("New Notes")  
+                .icon(StudioIcons.cashNotes)
+                .child(
+                  S.documentTypeList("cashNotes")
+                    .title("New Notes")
+                    .defaultOrdering([{field: "denomination", direction: "desc"}]),
+                ),
+              S.listItem()
+                .title("Trading & Investment")
+                .icon(StudioIcons.trading)
+                .child(
+                  S.documentTypeList("tradingInvestment")
+                    .title("Trading & Investment")
+                    .defaultOrdering([{field: "currentValue", direction: "desc"}]),
+                ),
+              S.listItem()
+                .title("Gold Wealth")
+                .icon(StudioIcons.gold)
+                .child(
+                  S.documentTypeList("goldWealth")
+                    .title("Gold Wealth")
+                    .defaultOrdering([{field: "currentValue", direction: "desc"}]),
+                ),
+            ]),
+        ),
+      S.divider(),
+      S.listItem()
         .title("People")
         .icon(StudioIcons.people)
         .child(
