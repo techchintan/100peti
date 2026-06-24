@@ -1,5 +1,7 @@
 import {groq} from "next-sanity";
 
+import {GROQ_CASH_NOTE_QUANTITY} from "@/lib/finance/cash-notes";
+
 export const HOME = groq`*[_type == "home"][0]`;
 
 export const SETTINGS = groq`*[_type == "settings"][0]`;
@@ -21,13 +23,7 @@ export const PORTFOLIO_SUMMARY = groq`{
     - math::sum(*[_type == "transactions" && transactionType == "expense" && !isBorrow].transactionAmount)
     - math::sum(*[_type == "transactions" && transactionType == "expense" && isBorrow].transactionAmount)
   ),
-  "notesValue": math::sum(*[_type == "cashNotes"].denomination * (
-    select(
-      defined(bundles100) || defined(bundles50) || defined(bundles) || defined(looseNotes) =>
-        coalesce(bundles100, bundles, 0) * 100 + coalesce(bundles50, 0) * 50 + coalesce(looseNotes, 0),
-      coalesce(quantity, 0)
-    )
-  )),
+  "notesValue": math::sum(*[_type == "cashNotes"]{"v": denomination * ${GROQ_CASH_NOTE_QUANTITY}}.v),
   "notesCount": count(*[_type == "cashNotes"]),
   "notesBundles100": math::sum(*[_type == "cashNotes"]{"n": coalesce(bundles100, bundles, 0)}.n),
   "notesBundles50": math::sum(*[_type == "cashNotes"]{"n": coalesce(bundles50, 0)}.n),
@@ -66,16 +62,8 @@ export const CASH_NOTES = groq`*[_type == "cashNotes"] | order(denomination desc
   lastCounted,
   notes,
   "bundles100Count": coalesce(bundles100, bundles, 0),
-  "quantity": select(
-    defined(bundles100) || defined(bundles50) || defined(bundles) || defined(looseNotes) =>
-      coalesce(bundles100, bundles, 0) * 100 + coalesce(bundles50, 0) * 50 + coalesce(looseNotes, 0),
-    coalesce(quantity, 0)
-  ),
-  "totalValue": denomination * select(
-    defined(bundles100) || defined(bundles50) || defined(bundles) || defined(looseNotes) =>
-      coalesce(bundles100, bundles, 0) * 100 + coalesce(bundles50, 0) * 50 + coalesce(looseNotes, 0),
-    coalesce(quantity, 0)
-  )
+  "quantity": ${GROQ_CASH_NOTE_QUANTITY},
+  "totalValue": denomination * ${GROQ_CASH_NOTE_QUANTITY}
 }`;
 
 export const TRADING_INVESTMENTS = groq`*[_type == "tradingInvestment"] | order(currentValue desc) {

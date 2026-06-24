@@ -1,6 +1,9 @@
 import {Gem, Scale, TrendingDown, TrendingUp} from "lucide-react";
 
 import {EmptyState, PageHeader, SectionNav, StatCard} from "@/components/finance/page-shell";
+import {LIVE_FETCH_OPTIONS} from "@/lib/finance/data";
+import {normalizePortfolio} from "@/lib/finance/portfolio";
+import type {GoldWealthItem} from "@/lib/finance/types";
 import {cn} from "@/lib/utils";
 import {formatDate, formatInr, formatPercent} from "@/lib/format";
 import {getGoldGain, wealthSections, type PortfolioSummary} from "@/lib/wealth";
@@ -9,38 +12,14 @@ import {GOLD_WEALTH, PORTFOLIO_SUMMARY} from "@/sanity/queries";
 
 export const dynamic = "force-dynamic";
 
-type GoldItem = {
-  _id: string;
-  itemName: string;
-  weightGrams: number;
-  purity?: string;
-  location?: string;
-  purchaseDate?: string;
-  purchasePrice: number;
-  currentValue: number;
-  notes?: string;
-  gainLoss: number;
-};
-
 export default async function GoldWealthPage() {
   const [{data: items}, {data: portfolio}] = await Promise.all([
-    sanityFetch<GoldItem[]>({query: GOLD_WEALTH}),
-    sanityFetch<PortfolioSummary>({query: PORTFOLIO_SUMMARY}),
+    sanityFetch<GoldWealthItem[]>({query: GOLD_WEALTH, options: LIVE_FETCH_OPTIONS}),
+    sanityFetch<PortfolioSummary>({query: PORTFOLIO_SUMMARY, options: LIVE_FETCH_OPTIONS}),
   ]);
 
   const holdings = items ?? [];
-  const summary: PortfolioSummary = {
-    cash: portfolio?.cash ?? 0,
-    notesValue: portfolio?.notesValue ?? 0,
-    notesCount: portfolio?.notesCount ?? 0,
-    tradingValue: portfolio?.tradingValue ?? 0,
-    tradingInvested: portfolio?.tradingInvested ?? 0,
-    tradingCount: portfolio?.tradingCount ?? 0,
-    goldValue: portfolio?.goldValue ?? 0,
-    goldPurchase: portfolio?.goldPurchase ?? 0,
-    goldCount: portfolio?.goldCount ?? 0,
-    goldWeight: portfolio?.goldWeight ?? 0,
-  };
+  const summary = normalizePortfolio(portfolio);
 
   const gain = getGoldGain(summary);
   const gainPct = summary.goldPurchase ? (gain / summary.goldPurchase) * 100 : 0;

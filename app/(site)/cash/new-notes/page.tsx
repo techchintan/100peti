@@ -1,35 +1,19 @@
 import {Banknote, Layers, Package} from "lucide-react";
 
 import {EmptyState, PageHeader, SectionNav, StatCard} from "@/components/finance/page-shell";
+import {LIVE_FETCH_OPTIONS} from "@/lib/finance/data";
+import type {CashNote, NotesPortfolioSummary} from "@/lib/finance/types";
 import {formatDate, formatInr} from "@/lib/format";
-import {wealthSections, type PortfolioSummary} from "@/lib/wealth";
+import {wealthSections} from "@/lib/wealth";
 import {sanityFetch} from "@/sanity/lib/live";
 import {CASH_NOTES, PORTFOLIO_SUMMARY} from "@/sanity/queries";
 
 export const dynamic = "force-dynamic";
 
-type CashNote = {
-  _id: string;
-  denomination: number;
-  bundles100?: number;
-  bundles50?: number;
-  bundles100Count: number;
-  looseNotes?: number;
-  quantity: number;
-  lastCounted?: string;
-  notes?: string;
-  totalValue: number;
-};
-
-type NotesPortfolioSummary = PortfolioSummary & {
-  notesBundles100?: number;
-  notesBundles50?: number;
-};
-
 export default async function NewNotesPage() {
   const [{data: notes}, {data: portfolio}] = await Promise.all([
-    sanityFetch<CashNote[]>({query: CASH_NOTES}),
-    sanityFetch<NotesPortfolioSummary>({query: PORTFOLIO_SUMMARY}),
+    sanityFetch<CashNote[]>({query: CASH_NOTES, options: LIVE_FETCH_OPTIONS}),
+    sanityFetch<NotesPortfolioSummary>({query: PORTFOLIO_SUMMARY, options: LIVE_FETCH_OPTIONS}),
   ]);
 
   const items = notes ?? [];

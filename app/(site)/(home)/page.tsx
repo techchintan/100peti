@@ -1,114 +1,30 @@
-import {Transactions, type Home} from "@/sanity.types";
 import {StatCard} from "@/components/finance/page-shell";
-import {sanityFetch} from "@/sanity/lib/live";
-import {DASHBOARD_TOTALS, HOME, PORTFOLIO_SUMMARY, ROKDA_TRANSACTIONS} from "@/sanity/queries";
+import {CashFlowCharts} from "@/components/finance/cash-flow-charts";
+import {DashboardCharts} from "@/components/finance/dashboard-charts";
+import {getHomePageData} from "@/lib/finance/data";
 import {formatInr, formatPercent} from "@/lib/format";
-import {
-  getGoldGain,
-  getNetWorth,
-  getTradingGain,
-  type PortfolioSummary,
-} from "@/lib/wealth";
+import {sanityFetch} from "@/sanity/lib/live";
+import {HOME} from "@/sanity/queries";
+import type {Home} from "@/sanity.types";
 import {Banknote, Gem, IndianRupee, LineChart, Wallet} from "lucide-react";
-
-import {IncomeExpense} from "./income-expense";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 export const revalidate = 0;
 
-type DashboardTotals = {
-  income: number;
-  expense: number;
-  lentMoney: number;
-  cash: number;
-};
-
-function buildChartData(transactions: Transactions[] | null) {
-  return transactions
-    ?.reduce(
-      (acc, transaction) => {
-        const date = new Date(transaction.transactionDate);
-        const monthYear = `${date.toLocaleDateString("en-IN", {month: "short"})} ${date.getFullYear()}`;
-
-        const existingMonth = acc.find((item) => item.month === monthYear);
-
-        if (existingMonth) {
-          if (transaction.transactionType === "income") {
-            existingMonth.income += transaction.transactionAmount;
-          } else if (transaction.transactionType === "expense") {
-            if (transaction.isBorrow) {
-              existingMonth.lentMoney += transaction.transactionAmount;
-            } else {
-              existingMonth.expense += transaction.transactionAmount;
-            }
-          }
-        } else {
-          acc.push({
-            month: monthYear,
-            income: transaction.transactionType === "income" ? transaction.transactionAmount : 0,
-            expense:
-              transaction.transactionType === "expense" && !transaction.isBorrow
-                ? transaction.transactionAmount
-                : 0,
-            lentMoney:
-              transaction.transactionType === "expense" && transaction.isBorrow
-                ? transaction.transactionAmount
-                : 0,
-          });
-        }
-
-        return acc;
-      },
-      [] as Array<{month: string; income: number; expense: number; lentMoney: number}>,
-    )
-    .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime());
-}
-
 export default async function HomePage() {
-  const [{data: transactions}, {data: totals}, {data: portfolio}, {data: home}] = await Promise.all([
-    sanityFetch<Transactions[]>({
-      query: ROKDA_TRANSACTIONS,
-      params: {type: "all"},
-      options: {cache: "no-store", next: {revalidate: 0, tags: []}},
-    }),
-    sanityFetch<DashboardTotals>({
-      query: DASHBOARD_TOTALS,
-      options: {cache: "no-store", next: {revalidate: 0, tags: []}},
-    }),
-    sanityFetch<PortfolioSummary>({
-      query: PORTFOLIO_SUMMARY,
-      options: {cache: "no-store", next: {revalidate: 0, tags: []}},
-    }),
-    sanityFetch<Home>({
-      query: HOME,
-      options: {cache: "no-store", next: {revalidate: 0, tags: []}},
-    }),
-  ]);
+  const {
+    home,
+    wealth,
+    totals,
+    yearlyCashFlow,
+    monthlyCashFlow,
+    charts,
+    netWorth,
+    tradingGain,
+    goldGain,
+  } = await getHomePageData();
 
-  const summary = {
-    income: totals?.income ?? 0,
-    expense: totals?.expense ?? 0,
-    lentMoney: totals?.lentMoney ?? 0,
-    cash: totals?.cash ?? 0,
-  };
-
-  const wealth: PortfolioSummary = {
-    cash: portfolio?.cash ?? summary.cash,
-    notesValue: portfolio?.notesValue ?? 0,
-    notesCount: portfolio?.notesCount ?? 0,
-    tradingValue: portfolio?.tradingValue ?? 0,
-    tradingInvested: portfolio?.tradingInvested ?? 0,
-    tradingCount: portfolio?.tradingCount ?? 0,
-    goldValue: portfolio?.goldValue ?? 0,
-    goldPurchase: portfolio?.goldPurchase ?? 0,
-    goldCount: portfolio?.goldCount ?? 0,
-    goldWeight: portfolio?.goldWeight ?? 0,
-  };
-
-  const netWorth = getNetWorth(wealth);
-  const tradingGain = getTradingGain(wealth);
-  const goldGain = getGoldGain(wealth);
   const tradingGainPct = wealth.tradingInvested ? (tradingGain / wealth.tradingInvested) * 100 : 0;
   const goldGainPct = wealth.goldPurchase ? (goldGain / wealth.goldPurchase) * 100 : 0;
 
@@ -163,7 +79,7 @@ export default async function HomePage() {
           label="Gold Wealth"
           tone="gold"
           value={formatInr(wealth.goldValue)}
-          hint={`${(wealth.goldWeight ?? 0).toFixed(1)}g · ${formatInr(goldGain)} (${formatPercent(goldGainPct)})`}
+          hint={`${wealth.goldWeight.toFixed(1)}g · ${formatInr(goldGain)} (${formatPercent(goldGainPct)})`}
         />
       </section>
 
@@ -172,8 +88,10 @@ export default async function HomePage() {
           <IndianRupee className="size-5 text-emerald-600" />
           <h2 className="font-serif text-2xl font-semibold text-zinc-900">Rokda Cash Flow</h2>
         </div>
-        <IncomeExpense chartData={buildChartData(transactions) ?? []} totals={summary} />
+        <CashFlowCharts yearlyData={yearlyCashFlow} monthlyData={monthlyCashFlow} totals={totals} />
       </section>
+
+      <DashboardCharts wealth={wealth} charts={charts} />
     </div>
   );
 }

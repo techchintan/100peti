@@ -1,6 +1,9 @@
 import {LineChart, TrendingDown, TrendingUp, Wallet} from "lucide-react";
 
 import {EmptyState, PageHeader, SectionNav, StatCard} from "@/components/finance/page-shell";
+import {LIVE_FETCH_OPTIONS} from "@/lib/finance/data";
+import {getActiveTradingInvestments, normalizePortfolio} from "@/lib/finance/portfolio";
+import type {TradingInvestment} from "@/lib/finance/types";
 import {cn} from "@/lib/utils";
 import {formatDate, formatInr, formatPercent} from "@/lib/format";
 import {getTradingGain, wealthSections, type PortfolioSummary} from "@/lib/wealth";
@@ -9,38 +12,14 @@ import {PORTFOLIO_SUMMARY, TRADING_INVESTMENTS} from "@/sanity/queries";
 
 export const dynamic = "force-dynamic";
 
-type TradingItem = {
-  _id: string;
-  name: string;
-  platform?: string;
-  assetType?: string;
-  status?: string;
-  purchaseDate?: string;
-  investedAmount: number;
-  currentValue: number;
-  notes?: string;
-  gainLoss: number;
-};
-
 export default async function TradingInvestmentPage() {
   const [{data: holdings}, {data: portfolio}] = await Promise.all([
-    sanityFetch<TradingItem[]>({query: TRADING_INVESTMENTS}),
-    sanityFetch<PortfolioSummary>({query: PORTFOLIO_SUMMARY}),
+    sanityFetch<TradingInvestment[]>({query: TRADING_INVESTMENTS, options: LIVE_FETCH_OPTIONS}),
+    sanityFetch<PortfolioSummary>({query: PORTFOLIO_SUMMARY, options: LIVE_FETCH_OPTIONS}),
   ]);
 
-  const items = (holdings ?? []).filter((item) => item.status !== "sold");
-  const summary: PortfolioSummary = {
-    cash: portfolio?.cash ?? 0,
-    notesValue: portfolio?.notesValue ?? 0,
-    notesCount: portfolio?.notesCount ?? 0,
-    tradingValue: portfolio?.tradingValue ?? 0,
-    tradingInvested: portfolio?.tradingInvested ?? 0,
-    tradingCount: portfolio?.tradingCount ?? 0,
-    goldValue: portfolio?.goldValue ?? 0,
-    goldPurchase: portfolio?.goldPurchase ?? 0,
-    goldCount: portfolio?.goldCount ?? 0,
-    goldWeight: portfolio?.goldWeight ?? 0,
-  };
+  const items = getActiveTradingInvestments(holdings);
+  const summary = normalizePortfolio(portfolio);
 
   const gain = getTradingGain(summary);
   const gainPct = summary.tradingInvested ? (gain / summary.tradingInvested) * 100 : 0;

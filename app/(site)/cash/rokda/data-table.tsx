@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {FilterIcon} from "lucide-react";
 import {DataTablePagination} from "./pagination";
-import {chartConfig} from "../../(home)/income-expense";
+import {cashFlowChartConfig} from "@/lib/finance/chart-theme";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -138,7 +138,7 @@ export function DataTable<TData, TValue>({columns, data}: DataTableProps<TData, 
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
                     style={{
-                      color: isLentMoney ? chartConfig.lentMoney.color : "inherit",
+                      color: isLentMoney ? cashFlowChartConfig.lentMoney.color : "inherit",
                     }}
                   >
                     {row.getVisibleCells().map((cell) => (
