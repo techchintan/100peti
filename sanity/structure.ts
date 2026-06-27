@@ -64,7 +64,7 @@ export const structure: StructureResolver = (S) =>
                   transactionList(
                     S,
                     "Lent Money",
-                    '_type == "transactions" && coalesce(isBorrow, false) == true',
+                    '_type == "transactions" && transactionType == "expense" && isBorrow == true',
                   ),
                 ),
             ]),

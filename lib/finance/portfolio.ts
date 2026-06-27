@@ -1,7 +1,28 @@
 import type {PortfolioSummary} from "@/lib/wealth";
 
 import {getCashNoteValue} from "./cash-notes";
-import type {CashNote, DashboardTotals, TradingInvestment} from "./types";
+import type {CashNote, DashboardTotals, RokdaTransactionLike, TradingInvestment} from "./types";
+
+/** GROQ filter: regular expenses (not lent money). */
+export const GROQ_REGULAR_EXPENSE =
+  '_type == "transactions" && transactionType == "expense" && !coalesce(isBorrow, false)';
+
+/** GROQ filter: active lent money still outstanding. */
+export const GROQ_ACTIVE_LENT =
+  '_type == "transactions" && transactionType == "expense" && isBorrow == true';
+
+export function isActiveLent(transaction: RokdaTransactionLike) {
+  return transaction.transactionType === "expense" && Boolean(transaction.isBorrow);
+}
+
+export function isReturnedIncome(description?: string | null) {
+  return Boolean(description?.trim().toLowerCase().startsWith("received back from"));
+}
+
+export function buildReturnedIncomeDescription(borrowerName: string, note?: string | null) {
+  const base = `Received back from ${borrowerName}`;
+  return note?.trim() ? `${base} — ${note.trim()}` : base;
+}
 
 const EMPTY_PORTFOLIO: PortfolioSummary = {
   cash: 0,

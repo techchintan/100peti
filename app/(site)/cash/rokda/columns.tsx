@@ -18,31 +18,35 @@ import {
 } from "@/components/ui/alert-dialog";
 import {Button} from "@/components/ui/button";
 import {formatDate, formatInr} from "@/lib/format";
+import {isActiveLent} from "@/lib/finance/portfolio";
 import {cn} from "@/lib/utils";
 import type {ROKDA_TRANSACTIONSResult} from "@/sanity.types";
 
 type RokdaRow = ROKDA_TRANSACTIONSResult[number];
 
-function MarkRepaidButton({row}: {row: RokdaRow}) {
+function MarkReturnedButton({row}: {row: RokdaRow}) {
   const router = useRouter();
 
-  if (!row.isBorrow) {
+  if (!isActiveLent(row)) {
     return <span className="text-muted-foreground text-sm">—</span>;
   }
+
+  const borrowerName = row.borrower?.name || "someone";
 
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
           <CheckIcon className="size-4 text-emerald-600" />
-          Mark repaid
+          Record return
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Mark as repaid?</AlertDialogTitle>
+          <AlertDialogTitle>Record cash returned?</AlertDialogTitle>
           <AlertDialogDescription>
-            This converts the lent-money entry into income and updates your cash balance.
+            Keeps the original lent expense on file, adds a new income entry for{" "}
+            {formatInr(row.transactionAmount)} from {borrowerName}, and clears active lent status.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -55,20 +59,21 @@ function MarkRepaidButton({row}: {row: RokdaRow}) {
                   headers: {"Content-Type": "application/json"},
                   body: JSON.stringify({
                     _id: row._id,
-                    isBorrow: false,
-                    transactionType: "income",
+                    action: "mark_returned",
                   }),
                 });
 
                 if (response.ok) {
-                  toast.success("Transaction updated");
+                  toast.success("Return recorded");
                   router.refresh();
-                } else {
-                  toast.error("Update failed");
+                  return;
                 }
+
+                const payload = (await response.json().catch(() => null)) as {error?: string} | null;
+                toast.error(payload?.error ?? "Update failed");
               } catch (error) {
-                console.error("Failed to update transaction:", error);
-                toast.error("Failed to update transaction");
+                console.error("Failed to record returned cash:", error);
+                toast.error("Failed to record returned cash");
               }
             }}
           >
@@ -153,6 +158,6 @@ export const columns: ColumnDef<RokdaRow>[] = [
   {
     id: "action",
     header: "Action",
-    cell: ({row}) => <MarkRepaidButton row={row.original} />,
+    cell: ({row}) => <MarkReturnedButton row={row.original} />,
   },
 ];

@@ -26,6 +26,8 @@ import {
 import {FilterIcon} from "lucide-react";
 import {DataTablePagination} from "./pagination";
 import {cashFlowChartConfig} from "@/lib/finance/chart-theme";
+import {isActiveLent} from "@/lib/finance/portfolio";
+import type {RokdaTransactionLike} from "@/lib/finance/types";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -132,7 +134,7 @@ export function DataTable<TData, TValue>({columns, data}: DataTableProps<TData, 
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row: Row<TData>) => {
-                const isLentMoney = (row.original as {isBorrow?: boolean}).isBorrow;
+                const isLentMoney = isActiveLent(row.original as RokdaTransactionLike);
                 return (
                   <TableRow
                     key={row.id}

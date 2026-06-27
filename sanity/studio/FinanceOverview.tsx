@@ -18,12 +18,12 @@ import {apiVersion} from "../env";
 
 const OVERVIEW_QUERY = `{
   "income": math::sum(*[_type == "transactions" && transactionType == "income"].transactionAmount),
-  "expense": math::sum(*[_type == "transactions" && transactionType == "expense" && !isBorrow].transactionAmount),
-  "lentMoney": math::sum(*[_type == "transactions" && transactionType == "expense" && isBorrow].transactionAmount),
+  "expense": math::sum(*[_type == "transactions" && transactionType == "expense" && !coalesce(isBorrow, false)].transactionAmount),
+  "lentMoney": math::sum(*[_type == "transactions" && transactionType == "expense" && isBorrow == true].transactionAmount),
   "cash": (
     math::sum(*[_type == "transactions" && transactionType == "income"].transactionAmount)
-    - math::sum(*[_type == "transactions" && transactionType == "expense" && !isBorrow].transactionAmount)
-    - math::sum(*[_type == "transactions" && transactionType == "expense" && isBorrow].transactionAmount)
+    - math::sum(*[_type == "transactions" && transactionType == "expense" && !coalesce(isBorrow, false)].transactionAmount)
+    - math::sum(*[_type == "transactions" && transactionType == "expense" && isBorrow == true].transactionAmount)
   ),
   "transactionCount": count(*[_type == "transactions"]),
   "peopleCount": count(*[_type == "intermediaries"]),

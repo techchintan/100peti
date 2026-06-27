@@ -1,6 +1,7 @@
 import {groq} from "next-sanity";
 
 import {GROQ_CASH_NOTE_QUANTITY} from "@/lib/finance/cash-notes";
+import {GROQ_ACTIVE_LENT, GROQ_REGULAR_EXPENSE} from "@/lib/finance/portfolio";
 
 export const HOME = groq`*[_type == "home"][0]`;
 
@@ -8,20 +9,20 @@ export const SETTINGS = groq`*[_type == "settings"][0]`;
 
 export const DASHBOARD_TOTALS = groq`{
   "income": math::sum(*[_type == "transactions" && transactionType == "income"].transactionAmount),
-  "expense": math::sum(*[_type == "transactions" && transactionType == "expense" && !isBorrow].transactionAmount),
-  "lentMoney": math::sum(*[_type == "transactions" && transactionType == "expense" && isBorrow].transactionAmount),
+  "expense": math::sum(*[${GROQ_REGULAR_EXPENSE}].transactionAmount),
+  "lentMoney": math::sum(*[${GROQ_ACTIVE_LENT}].transactionAmount),
   "cash": (
     math::sum(*[_type == "transactions" && transactionType == "income"].transactionAmount)
-    - math::sum(*[_type == "transactions" && transactionType == "expense" && !isBorrow].transactionAmount)
-    - math::sum(*[_type == "transactions" && transactionType == "expense" && isBorrow].transactionAmount)
+    - math::sum(*[${GROQ_REGULAR_EXPENSE}].transactionAmount)
+    - math::sum(*[${GROQ_ACTIVE_LENT}].transactionAmount)
   )
 }`;
 
 export const PORTFOLIO_SUMMARY = groq`{
   "cash": (
     math::sum(*[_type == "transactions" && transactionType == "income"].transactionAmount)
-    - math::sum(*[_type == "transactions" && transactionType == "expense" && !isBorrow].transactionAmount)
-    - math::sum(*[_type == "transactions" && transactionType == "expense" && isBorrow].transactionAmount)
+    - math::sum(*[${GROQ_REGULAR_EXPENSE}].transactionAmount)
+    - math::sum(*[${GROQ_ACTIVE_LENT}].transactionAmount)
   ),
   "notesValue": math::sum(*[_type == "cashNotes"]{"v": denomination * ${GROQ_CASH_NOTE_QUANTITY}}.v),
   "notesCount": count(*[_type == "cashNotes"]),

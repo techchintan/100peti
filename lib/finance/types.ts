@@ -50,3 +50,10 @@ export type NotesPortfolioSummary = PortfolioSummary & {
   notesBundles100?: number;
   notesBundles50?: number;
 };
+
+export type RokdaTransactionLike = {
+  transactionType: string;
+  transactionAmount: number;
+  isBorrow?: boolean | null;
+  transactionDescription?: string | null;
+};

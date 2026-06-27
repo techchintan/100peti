@@ -1,6 +1,7 @@
 import type {ROKDA_TRANSACTIONSResult} from "@/sanity.types";
 import {getGoldGain, getTradingGain, type PortfolioSummary} from "@/lib/wealth";
 
+import {isActiveLent} from "./portfolio";
 import type {CashNote, GoldWealthItem, TradingInvestment} from "./types";
 
 export type CashFlowPeriod = {
@@ -96,9 +97,9 @@ function upsertCashFlowPeriod(
   if (transaction.transactionType === "income") {
     existing.income += transaction.transactionAmount;
   } else if (transaction.transactionType === "expense") {
-    if (transaction.isBorrow) {
+    if (isActiveLent(transaction)) {
       existing.lentMoney += transaction.transactionAmount;
-    } else {
+    } else if (!transaction.isBorrow) {
       existing.expense += transaction.transactionAmount;
     }
   }
@@ -167,7 +168,7 @@ export function buildLentByPerson(
   const map = new Map<string, number>();
 
   for (const transaction of transactions ?? []) {
-    if (transaction.transactionType !== "expense" || !transaction.isBorrow) continue;
+    if (!isActiveLent(transaction)) continue;
     const name = transaction.borrower?.name?.trim() || "Unknown";
     map.set(name, (map.get(name) ?? 0) + transaction.transactionAmount);
   }
