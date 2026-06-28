@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
         transactionAmount,
         isBorrow,
         transactionDescription,
-        "borrower": borrower->{name}
+        "borrower": borrower->name
       }`,
       {id: body._id},
     );

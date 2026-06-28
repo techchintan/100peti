@@ -1,7 +1,9 @@
 import {Gem, Scale, TrendingDown, TrendingUp} from "lucide-react";
 
 import {EmptyState, PageHeader, SectionNav, StatCard} from "@/components/finance/page-shell";
+import {HoldingsChartsSection} from "@/components/finance/holdings-charts";
 import {LIVE_FETCH_OPTIONS} from "@/lib/finance/data";
+import {buildGoldHoldings} from "@/lib/finance/chart-data";
 import {normalizePortfolio} from "@/lib/finance/portfolio";
 import type {GoldWealthItem} from "@/lib/finance/types";
 import {cn} from "@/lib/utils";
@@ -53,9 +55,16 @@ export default async function GoldWealthPage() {
           action={{label: "Open Studio", href: "/studio/structure/goldWealth"}}
         />
       ) : (
-        <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left text-sm">
+        <div className="space-y-8">
+          <HoldingsChartsSection
+            title="Gold Holdings"
+            description="Purchase price vs current value for each gold item."
+            holdings={buildGoldHoldings(holdings)}
+          />
+
+          <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[760px] text-left text-sm">
               <thead className="bg-zinc-50 text-xs tracking-wide text-zinc-500 uppercase">
                 <tr>
                   <th className="px-5 py-3 font-medium">Item</th>
@@ -91,6 +100,7 @@ export default async function GoldWealthPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
       )}

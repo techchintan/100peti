@@ -4,23 +4,20 @@ import {sanityFetch} from "@/sanity/lib/live";
 import {
   CASH_NOTES,
   DASHBOARD_TOTALS,
-  GOLD_WEALTH,
   HOME,
   PORTFOLIO_SUMMARY,
   ROKDA_TRANSACTIONS,
-  TRADING_INVESTMENTS,
 } from "@/sanity/queries";
 import type {PortfolioSummary} from "@/lib/wealth";
 
 import {
   buildDashboardChartData,
-  buildMonthlyCashFlow,
-  buildYearlyCashFlow,
+  toCashFlowTransactions,
+  type CashFlowTransaction,
   type DashboardChartData,
-  type CashFlowPeriod,
 } from "./chart-data";
 import {normalizeDashboardTotals, normalizePortfolio, enrichWealthFromCashNotes} from "./portfolio";
-import type {CashNote, DashboardTotals, GoldWealthItem, TradingInvestment} from "./types";
+import type {CashNote, DashboardTotals} from "./types";
 
 export const LIVE_FETCH_OPTIONS = {
   cache: "no-store" as const,
@@ -31,8 +28,8 @@ export type HomePageData = {
   home: Home | null;
   wealth: PortfolioSummary;
   totals: DashboardTotals;
-  yearlyCashFlow: CashFlowPeriod[];
-  monthlyCashFlow: CashFlowPeriod[];
+  transactions: CashFlowTransaction[];
+  defaultFinancialYear: string;
   charts: DashboardChartData;
   netWorth: number;
   tradingGain: number;
@@ -46,8 +43,6 @@ export async function getHomePageData(): Promise<HomePageData> {
     {data: portfolio},
     {data: home},
     {data: cashNotes},
-    {data: trading},
-    {data: gold},
   ] = await Promise.all([
     sanityFetch<ROKDA_TRANSACTIONSResult>({
       query: ROKDA_TRANSACTIONS,
@@ -70,33 +65,21 @@ export async function getHomePageData(): Promise<HomePageData> {
       query: CASH_NOTES,
       options: LIVE_FETCH_OPTIONS,
     }),
-    sanityFetch<TradingInvestment[]>({
-      query: TRADING_INVESTMENTS,
-      options: LIVE_FETCH_OPTIONS,
-    }),
-    sanityFetch<GoldWealthItem[]>({
-      query: GOLD_WEALTH,
-      options: LIVE_FETCH_OPTIONS,
-    }),
   ]);
 
   const summary = normalizeDashboardTotals(totals);
   const wealth = enrichWealthFromCashNotes(normalizePortfolio(portfolio, summary.cash), cashNotes);
-  const yearlyCashFlow = buildYearlyCashFlow(transactions);
+  const cashFlowTransactions = toCashFlowTransactions(transactions);
 
   return {
     home: home ?? null,
     wealth,
     totals: summary,
-    yearlyCashFlow,
-    monthlyCashFlow: buildMonthlyCashFlow(transactions),
+    transactions: cashFlowTransactions,
+    defaultFinancialYear: "all",
     charts: buildDashboardChartData({
       wealth,
       transactions,
-      yearlyCashFlow,
-      cashNotes,
-      trading,
-      gold,
     }),
     netWorth: getNetWorth(wealth),
     tradingGain: getTradingGain(wealth),

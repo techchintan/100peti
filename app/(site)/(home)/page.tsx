@@ -6,7 +6,7 @@ import {formatInr, formatPercent} from "@/lib/format";
 import {sanityFetch} from "@/sanity/lib/live";
 import {HOME} from "@/sanity/queries";
 import type {Home} from "@/sanity.types";
-import {Banknote, Gem, IndianRupee, LineChart, Wallet} from "lucide-react";
+import {Banknote, Gem, LineChart, Wallet} from "lucide-react";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
@@ -17,8 +17,8 @@ export default async function HomePage() {
     home,
     wealth,
     totals,
-    yearlyCashFlow,
-    monthlyCashFlow,
+    transactions,
+    defaultFinancialYear,
     charts,
     netWorth,
     tradingGain,
@@ -84,11 +84,11 @@ export default async function HomePage() {
       </section>
 
       <section className="space-y-4">
-        <div className="flex items-center gap-2">
-          <IndianRupee className="size-5 text-emerald-600" />
-          <h2 className="font-serif text-2xl font-semibold text-zinc-900">Rokda Cash Flow</h2>
-        </div>
-        <CashFlowCharts yearlyData={yearlyCashFlow} monthlyData={monthlyCashFlow} totals={totals} />
+        <CashFlowCharts
+          transactions={transactions}
+          totals={totals}
+          defaultFinancialYear={defaultFinancialYear}
+        />
       </section>
 
       <DashboardCharts wealth={wealth} charts={charts} />

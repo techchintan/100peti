@@ -5,4 +5,6 @@ export const cashFlowChartConfig = {
   expense: {label: "Expense", color: "hsl(0 84% 60%)"},
   lentMoney: {label: "Lent Money", color: "hsl(38 92% 50%)"},
   netCash: {label: "Net Cash", color: "hsl(262 83% 58%)"},
+  savingsRate: {label: "Savings Rate", color: "hsl(199 89% 48%)"},
+  balance: {label: "Running Balance", color: "hsl(262 83% 58%)"},
 } satisfies ChartConfig;

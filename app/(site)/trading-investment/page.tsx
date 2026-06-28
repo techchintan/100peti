@@ -1,7 +1,9 @@
 import {LineChart, TrendingDown, TrendingUp, Wallet} from "lucide-react";
 
 import {EmptyState, PageHeader, SectionNav, StatCard} from "@/components/finance/page-shell";
+import {HoldingsChartsSection} from "@/components/finance/holdings-charts";
 import {LIVE_FETCH_OPTIONS} from "@/lib/finance/data";
+import {buildTradingHoldings} from "@/lib/finance/chart-data";
 import {getActiveTradingInvestments, normalizePortfolio} from "@/lib/finance/portfolio";
 import type {TradingInvestment} from "@/lib/finance/types";
 import {cn} from "@/lib/utils";
@@ -53,7 +55,14 @@ export default async function TradingInvestmentPage() {
           action={{label: "Open Studio", href: "/studio/structure/tradingInvestment"}}
         />
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="space-y-8">
+          <HoldingsChartsSection
+            title="Trading Holdings"
+            description="Cost basis vs current value for each active investment."
+            holdings={buildTradingHoldings(items)}
+          />
+
+          <div className="grid gap-4 lg:grid-cols-2">
           {items.map((item) => {
             const positive = item.gainLoss >= 0;
             return (
@@ -96,6 +105,7 @@ export default async function TradingInvestmentPage() {
               </article>
             );
           })}
+          </div>
         </div>
       )}
     </div>

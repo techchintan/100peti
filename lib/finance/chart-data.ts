@@ -1,12 +1,34 @@
 import type {ROKDA_TRANSACTIONSResult} from "@/sanity.types";
 import {getGoldGain, getTradingGain, type PortfolioSummary} from "@/lib/wealth";
 
-import {isActiveLent} from "./portfolio";
+import {
+  formatFinancialYearLabel,
+  getFinancialYearKey,
+  getFinancialYearStartDate,
+  isDateInFinancialYear,
+  listFinancialYearKeys,
+} from "./financial-year";
+import {isActiveLent, isReturnedIncome} from "./portfolio";
 import type {CashNote, GoldWealthItem, TradingInvestment} from "./types";
+
+export type CashFlowTransaction = {
+  transactionDate: string;
+  transactionType: string;
+  transactionAmount: number;
+  isBorrow?: boolean | null;
+  transactionDescription?: string | null;
+};
 
 export type CashFlowPeriod = {
   label: string;
   sortKey: string;
+  income: number;
+  expense: number;
+  lentMoney: number;
+  netCash: number;
+};
+
+export type CashFlowTotals = {
   income: number;
   expense: number;
   lentMoney: number;
@@ -22,14 +44,6 @@ export type WealthSlice = {
 export type LentByPerson = {
   name: string;
   amount: number;
-};
-
-export type SavingsRatePeriod = {
-  label: string;
-  sortKey: string;
-  savingsRate: number;
-  income: number;
-  netCash: number;
 };
 
 export type DenominationBreakdown = {
@@ -59,17 +73,33 @@ export type DashboardChartData = {
   wealthBreakdown: WealthSlice[];
   investmentCategories: InvestmentCategory[];
   lentByPerson: LentByPerson[];
-  savingsRate: SavingsRatePeriod[];
-  notesByDenomination: DenominationBreakdown[];
-  tradingHoldings: HoldingPnL[];
-  goldHoldings: HoldingPnL[];
 };
 
-type TransactionLike = {
-  transactionDate: string;
-  transactionType: string;
-  transactionAmount: number;
-  isBorrow?: boolean | null;
+export type RunningBalancePoint = {
+  label: string;
+  sortKey: string;
+  balance: number;
+  netChange: number;
+};
+
+export type WaterfallBar = {
+  label: string;
+  key: string;
+  base: number;
+  amount: number;
+  total: number;
+  kind: "start" | "positive" | "negative" | "end";
+};
+
+export type NetChangePeriod = CashFlowPeriod & {
+  savingsRate: number;
+};
+
+export type TrendPeriod = {
+  label: string;
+  sortKey: string;
+  income: number;
+  expense: number;
 };
 
 function withNetCash(period: Omit<CashFlowPeriod, "netCash">): CashFlowPeriod {
@@ -83,7 +113,7 @@ function upsertCashFlowPeriod(
   map: Map<string, CashFlowPeriod>,
   sortKey: string,
   label: string,
-  transaction: TransactionLike,
+  transaction: CashFlowTransaction,
 ) {
   const existing = map.get(sortKey) ?? {
     label,
@@ -107,31 +137,225 @@ function upsertCashFlowPeriod(
   map.set(sortKey, withNetCash(existing));
 }
 
-export function buildYearlyCashFlow(transactions?: TransactionLike[] | null): CashFlowPeriod[] {
+export function aggregateCashFlowTotals(periods: CashFlowPeriod[]): CashFlowTotals {
+  return periods.reduce(
+    (acc, row) => ({
+      income: acc.income + row.income,
+      expense: acc.expense + row.expense,
+      lentMoney: acc.lentMoney + row.lentMoney,
+      netCash: acc.netCash + row.netCash,
+    }),
+    {income: 0, expense: 0, lentMoney: 0, netCash: 0},
+  );
+}
+
+export function savingsRateFromTotals(totals: Pick<CashFlowTotals, "income" | "netCash">): number {
+  return totals.income > 0 ? (totals.netCash / totals.income) * 100 : 0;
+}
+
+export function computeCashBalanceFromTransactions(transactions?: CashFlowTransaction[] | null): number {
+  return aggregateCashFlowTotals(buildAllTimeCashFlowPeriod(transactions)).netCash;
+}
+
+function buildAllTimeCashFlowPeriod(transactions?: CashFlowTransaction[] | null): CashFlowPeriod[] {
+  const totals = aggregateCashFlowTotalsFromTransactions(transactions);
+  return [{label: "All time", sortKey: "all", ...totals}];
+}
+
+function aggregateCashFlowTotalsFromTransactions(transactions?: CashFlowTransaction[] | null): CashFlowTotals {
+  const map = new Map<string, CashFlowPeriod>();
+  for (const transaction of transactions ?? []) {
+    upsertCashFlowPeriod(map, "all", "All time", transaction);
+  }
+  const period = map.get("all");
+  return period
+    ? {income: period.income, expense: period.expense, lentMoney: period.lentMoney, netCash: period.netCash}
+    : {income: 0, expense: 0, lentMoney: 0, netCash: 0};
+}
+
+export function getFinancialYearOptions(transactions?: CashFlowTransaction[] | null) {
+  const keys = listFinancialYearKeys((transactions ?? []).map((t) => t.transactionDate));
+  return keys.map((key) => ({value: key, label: formatFinancialYearLabel(key)}));
+}
+
+export function filterTransactionsByFinancialYear(
+  transactions: CashFlowTransaction[] | null | undefined,
+  fyKey: string,
+): CashFlowTransaction[] {
+  return (transactions ?? []).filter((t) => isDateInFinancialYear(t.transactionDate, fyKey));
+}
+
+export function filterTransactionsBeforeDate(
+  transactions: CashFlowTransaction[] | null | undefined,
+  beforeDate: string,
+): CashFlowTransaction[] {
+  const before = new Date(beforeDate).getTime();
+  return (transactions ?? []).filter((t) => new Date(t.transactionDate).getTime() < before);
+}
+
+export function buildFinancialYearCashFlow(transactions?: CashFlowTransaction[] | null): CashFlowPeriod[] {
   const map = new Map<string, CashFlowPeriod>();
 
   for (const transaction of transactions ?? []) {
-    const year = new Date(transaction.transactionDate).getFullYear();
-    const sortKey = String(year);
-    upsertCashFlowPeriod(map, sortKey, sortKey, transaction);
+    const fyKey = getFinancialYearKey(transaction.transactionDate);
+    upsertCashFlowPeriod(map, fyKey, formatFinancialYearLabel(fyKey), transaction);
   }
 
   return [...map.values()].sort((a, b) => a.sortKey.localeCompare(b.sortKey));
 }
 
-export function buildMonthlyCashFlow(transactions?: TransactionLike[] | null): CashFlowPeriod[] {
+export function buildFinancialYearMonthlyCashFlow(
+  transactions: CashFlowTransaction[] | null | undefined,
+  fyKey: string,
+): CashFlowPeriod[] {
   const map = new Map<string, CashFlowPeriod>();
 
-  for (const transaction of transactions ?? []) {
+  for (const transaction of filterTransactionsByFinancialYear(transactions, fyKey)) {
     const date = new Date(transaction.transactionDate);
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const sortKey = `${year}-${String(month + 1).padStart(2, "0")}`;
+    const sortKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
     const label = date.toLocaleDateString("en-IN", {month: "short", year: "numeric"});
     upsertCashFlowPeriod(map, sortKey, label, transaction);
   }
 
   return [...map.values()].sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+}
+
+export function buildRunningBalance(
+  monthlyPeriods: CashFlowPeriod[],
+  openingBalance: number,
+): RunningBalancePoint[] {
+  let balance = openingBalance;
+  return monthlyPeriods.map((period) => {
+    balance += period.netCash;
+    return {
+      label: period.label,
+      sortKey: period.sortKey,
+      netChange: period.netCash,
+      balance,
+    };
+  });
+}
+
+export function buildFyEndBalanceTrend(fyPeriods: CashFlowPeriod[]): RunningBalancePoint[] {
+  let balance = 0;
+  return fyPeriods.map((period) => {
+    balance += period.netCash;
+    return {
+      label: period.label,
+      sortKey: period.sortKey,
+      netChange: period.netCash,
+      balance,
+    };
+  });
+}
+
+export function buildNetChangePeriods(periods: CashFlowPeriod[]): NetChangePeriod[] {
+  return periods.map((period) => ({
+    ...period,
+    savingsRate: savingsRateFromTotals(period),
+  }));
+}
+
+export function buildFinancialYearWaterfall(
+  transactions: CashFlowTransaction[] | null | undefined,
+  fyKey: string,
+): WaterfallBar[] {
+  const fyStart = getFinancialYearStartDate(fyKey);
+  const opening = computeCashBalanceFromTransactions(filterTransactionsBeforeDate(transactions, fyStart));
+  const fyTxns = filterTransactionsByFinancialYear(transactions, fyKey);
+
+  let income = 0;
+  let expense = 0;
+  let lent = 0;
+  let returns = 0;
+
+  for (const transaction of fyTxns) {
+    if (transaction.transactionType === "income") {
+      income += transaction.transactionAmount;
+      if (isReturnedIncome(transaction.transactionDescription)) {
+        returns += transaction.transactionAmount;
+      }
+    } else if (transaction.transactionType === "expense") {
+      if (isActiveLent(transaction)) {
+        lent += transaction.transactionAmount;
+      } else if (!transaction.isBorrow) {
+        expense += transaction.transactionAmount;
+      }
+    }
+  }
+
+  const regularIncome = income - returns;
+  const closing = opening + income - expense - lent;
+  const bars: WaterfallBar[] = [];
+  let running = opening;
+
+  bars.push({
+    label: "Opening",
+    key: "opening",
+    base: 0,
+    amount: opening,
+    total: opening,
+    kind: "start",
+  });
+
+  if (regularIncome > 0) {
+    bars.push({
+      label: "Income",
+      key: "income",
+      base: running,
+      amount: regularIncome,
+      total: running + regularIncome,
+      kind: "positive",
+    });
+    running += regularIncome;
+  }
+
+  if (returns > 0) {
+    bars.push({
+      label: "Cash returned",
+      key: "returns",
+      base: running,
+      amount: returns,
+      total: running + returns,
+      kind: "positive",
+    });
+    running += returns;
+  }
+
+  if (expense > 0) {
+    running -= expense;
+    bars.push({
+      label: "Expense",
+      key: "expense",
+      base: running,
+      amount: expense,
+      total: running,
+      kind: "negative",
+    });
+  }
+
+  if (lent > 0) {
+    running -= lent;
+    bars.push({
+      label: "Lent",
+      key: "lent",
+      base: running,
+      amount: lent,
+      total: running,
+      kind: "negative",
+    });
+  }
+
+  bars.push({
+    label: "Closing",
+    key: "closing",
+    base: 0,
+    amount: closing,
+    total: closing,
+    kind: "end",
+  });
+
+  return bars;
 }
 
 export function buildWealthBreakdown(wealth: PortfolioSummary): WealthSlice[] {
@@ -162,9 +386,7 @@ export function buildInvestmentCategories(wealth: PortfolioSummary): InvestmentC
   ].filter((row) => row.invested > 0 || row.value > 0);
 }
 
-export function buildLentByPerson(
-  transactions?: ROKDA_TRANSACTIONSResult | null,
-): LentByPerson[] {
+export function buildLentByPerson(transactions?: ROKDA_TRANSACTIONSResult | null): LentByPerson[] {
   const map = new Map<string, number>();
 
   for (const transaction of transactions ?? []) {
@@ -176,16 +398,6 @@ export function buildLentByPerson(
   return [...map.entries()]
     .map(([name, amount]) => ({name, amount}))
     .sort((a, b) => b.amount - a.amount);
-}
-
-export function buildSavingsRate(yearlyData: CashFlowPeriod[]): SavingsRatePeriod[] {
-  return yearlyData.map((period) => ({
-    label: period.label,
-    sortKey: period.sortKey,
-    income: period.income,
-    netCash: period.netCash,
-    savingsRate: period.income > 0 ? (period.netCash / period.income) * 100 : 0,
-  }));
 }
 
 export function buildNotesByDenomination(notes?: CashNote[] | null): DenominationBreakdown[] {
@@ -236,25 +448,25 @@ export function buildGoldHoldings(rows?: GoldWealthItem[] | null): HoldingPnL[] 
 export function buildDashboardChartData({
   wealth,
   transactions,
-  yearlyCashFlow,
-  cashNotes,
-  trading,
-  gold,
 }: {
   wealth: PortfolioSummary;
   transactions?: ROKDA_TRANSACTIONSResult | null;
-  yearlyCashFlow: CashFlowPeriod[];
-  cashNotes?: CashNote[] | null;
-  trading?: TradingInvestment[] | null;
-  gold?: GoldWealthItem[] | null;
 }): DashboardChartData {
   return {
     wealthBreakdown: buildWealthBreakdown(wealth),
     investmentCategories: buildInvestmentCategories(wealth),
     lentByPerson: buildLentByPerson(transactions),
-    savingsRate: buildSavingsRate(yearlyCashFlow),
-    notesByDenomination: buildNotesByDenomination(cashNotes),
-    tradingHoldings: buildTradingHoldings(trading),
-    goldHoldings: buildGoldHoldings(gold),
   };
+}
+
+export function toCashFlowTransactions(
+  transactions?: ROKDA_TRANSACTIONSResult | null,
+): CashFlowTransaction[] {
+  return (transactions ?? []).map((transaction) => ({
+    transactionDate: transaction.transactionDate,
+    transactionType: transaction.transactionType,
+    transactionAmount: transaction.transactionAmount,
+    isBorrow: transaction.isBorrow,
+    transactionDescription: transaction.transactionDescription,
+  }));
 }

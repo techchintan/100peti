@@ -1,7 +1,13 @@
 import {Banknote, Layers, Package} from "lucide-react";
 
 import {EmptyState, PageHeader, SectionNav, StatCard} from "@/components/finance/page-shell";
+import {
+  NotesDenominationChart,
+  NotesDenominationFooter,
+} from "@/components/finance/holdings-charts";
+import {ChartCard} from "@/components/finance/chart-shell";
 import {LIVE_FETCH_OPTIONS} from "@/lib/finance/data";
+import {buildNotesByDenomination} from "@/lib/finance/chart-data";
 import type {CashNote, NotesPortfolioSummary} from "@/lib/finance/types";
 import {formatDate, formatInr} from "@/lib/format";
 import {wealthSections} from "@/lib/wealth";
@@ -23,6 +29,7 @@ export default async function NewNotesPage() {
   const totalBundles50 =
     portfolio?.notesBundles50 ?? items.reduce((sum, item) => sum + (item.bundles50 ?? 0), 0);
   const totalValue = portfolio?.notesValue ?? items.reduce((sum, item) => sum + item.totalValue, 0);
+  const notesChartData = buildNotesByDenomination(items);
 
   return (
     <div className="pb-10">
@@ -66,8 +73,18 @@ export default async function NewNotesPage() {
           action={{label: "Open Studio", href: "/studio/structure/cashNotes"}}
         />
       ) : (
-        <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
-          <div className="overflow-x-auto">
+        <>
+          <ChartCard
+            title="Notes by Denomination"
+            description="Total rupee value held in each note denomination."
+            className="mb-8"
+          >
+            <NotesDenominationChart data={notesChartData} />
+            <NotesDenominationFooter data={notesChartData} />
+          </ChartCard>
+
+          <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
+            <div className="overflow-x-auto">
             <table className="w-full min-w-[800px] text-left text-sm">
               <thead className="bg-zinc-50 text-xs tracking-wide text-zinc-500 uppercase">
                 <tr>
@@ -106,8 +123,9 @@ export default async function NewNotesPage() {
                 </tr>
               </tfoot>
             </table>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
