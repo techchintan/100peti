@@ -70,7 +70,9 @@ export const cashNotes = defineType({
           .min(0)
           .integer()
           .max(MAX_LOOSE_NOTES)
-          .error(`Loose notes must be 0–${MAX_LOOSE_NOTES}. Use a 50-note bundle for larger counts.`),
+          .error(
+            `Loose notes must be 0–${MAX_LOOSE_NOTES}. Use a 50-note bundle for larger counts.`,
+          ),
     }),
     defineField({
       name: "computedQuantity",

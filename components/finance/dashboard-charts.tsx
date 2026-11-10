@@ -45,7 +45,9 @@ export function DashboardCharts({
 
       {hasActiveLent && (
         <section className="space-y-4">
-          <h2 className="font-serif text-2xl font-semibold text-zinc-900">Outstanding Lent Money</h2>
+          <h2 className="font-serif text-2xl font-semibold text-zinc-900">
+            Outstanding Lent Money
+          </h2>
           <ChartCard title="Lent by Person" description="Active lent amounts grouped by borrower.">
             <LentByPersonChart data={lentByPerson} />
           </ChartCard>

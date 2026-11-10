@@ -61,7 +61,10 @@ export async function POST(request: NextRequest) {
     }
 
     if (existing.transactionType !== "expense" || !existing.isBorrow) {
-      return NextResponse.json({error: "Only active lent-money entries can be marked returned"}, {status: 400});
+      return NextResponse.json(
+        {error: "Only active lent-money entries can be marked returned"},
+        {status: 400},
+      );
     }
 
     if (!existing.transactionAmount || existing.transactionAmount <= 0) {
@@ -76,15 +79,14 @@ export async function POST(request: NextRequest) {
       transactionType: "income",
       transactionAmount: existing.transactionAmount,
       transactionDate: returnedDate,
-      transactionDescription: buildReturnedIncomeDescription(borrowerName, existing.transactionDescription),
+      transactionDescription: buildReturnedIncomeDescription(
+        borrowerName,
+        existing.transactionDescription,
+      ),
       isBorrow: false,
     });
 
-    const lent = await client
-      .patch(body._id)
-      .set({isBorrow: false})
-      .unset(["borrower"])
-      .commit();
+    const lent = await client.patch(body._id).set({isBorrow: false}).unset(["borrower"]).commit();
 
     revalidatePath("/");
     revalidatePath("/cash/rokda");

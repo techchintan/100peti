@@ -13,6 +13,53 @@
  */
 
 // Source: schema.json
+export type GoldWealth = {
+  _id: string;
+  _type: "goldWealth";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  itemName: string;
+  weightGrams: number;
+  purity?: "24k" | "22k" | "18k" | "other";
+  location?: string;
+  purchaseDate?: string;
+  purchasePrice: number;
+  currentValue: number;
+  notes?: string;
+};
+
+export type TradingInvestment = {
+  _id: string;
+  _type: "tradingInvestment";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  name: string;
+  platform?: string;
+  assetType?: "stock" | "mutual-fund" | "etf" | "bond" | "other";
+  status?: "active" | "sold";
+  purchaseDate?: string;
+  investedAmount: number;
+  currentValue: number;
+  notes?: string;
+};
+
+export type CashNotes = {
+  _id: string;
+  _type: "cashNotes";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  denomination: 10 | 20 | 50 | 100 | 200 | 500;
+  bundles100: number;
+  bundles50: number;
+  looseNotes: number;
+  computedQuantity?: number;
+  lastCounted?: string;
+  notes?: string;
+};
+
 export type Transactions = {
   _id: string;
   _type: "transactions";
@@ -20,8 +67,9 @@ export type Transactions = {
   _updatedAt: string;
   _rev: string;
   transactionDate: string;
-  transactionAmount: number;
   transactionType: "income" | "expense";
+  transactionAmount: number;
+  transactionDescription?: string;
   isBorrow?: boolean;
   borrower?: {
     _ref: string;
@@ -41,7 +89,6 @@ export type Transactions = {
     _weak?: boolean;
     [internalGroqTypeReferenceTo]?: "intermediaries";
   };
-  transactionDescription?: string;
 };
 
 export type Intermediaries = {
@@ -50,11 +97,11 @@ export type Intermediaries = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  name?: string;
-  mobileNumber?: string;
+  name: string;
   relationship?: string;
+  mobileNumber?: string;
   bankName?: string;
-  accountNumber?: number;
+  accountNumber?: string;
   ifscCode?: string;
   swiftCode?: string;
   bankLocation?: string;
@@ -119,15 +166,15 @@ export type Settings = {
   _updatedAt: string;
   _rev: string;
   brand?: {
-    name?: string;
+    name: string;
   };
   header?: {
     headerLinks?: Array<{
-      label?: string;
-      link?: string;
+      label: string;
+      link: string;
       submenu?: Array<{
-        label?: string;
-        link?: string;
+        label: string;
+        link: string;
         _type: "submenuItem";
         _key: string;
       }>;
@@ -302,6 +349,9 @@ export type SanityAssetSourceData = {
 };
 
 export type AllSanitySchemaTypes =
+  | GoldWealth
+  | TradingInvestment
+  | CashNotes
   | Transactions
   | Intermediaries
   | Home
@@ -383,15 +433,15 @@ export type SETTINGSResult = {
   _updatedAt: string;
   _rev: string;
   brand?: {
-    name?: string;
+    name: string;
   };
   header?: {
     headerLinks?: Array<{
-      label?: string;
-      link?: string;
+      label: string;
+      link: string;
       submenu?: Array<{
-        label?: string;
-        link?: string;
+        label: string;
+        link: string;
         _type: "submenuItem";
         _key: string;
       }>;
@@ -400,6 +450,30 @@ export type SETTINGSResult = {
     }>;
   };
 } | null;
+// Variable: DASHBOARD_TOTALS
+// Query: {  "income": math::sum(*[_type == "transactions" && transactionType == "income"].transactionAmount),  "expense": math::sum(*[_type == "transactions" && transactionType == "expense" && !coalesce(isBorrow, false)].transactionAmount),  "lentMoney": math::sum(*[_type == "transactions" && transactionType == "expense" && isBorrow == true].transactionAmount),  "cash": (    math::sum(*[_type == "transactions" && transactionType == "income"].transactionAmount)    - math::sum(*[_type == "transactions" && transactionType == "expense" && !coalesce(isBorrow, false)].transactionAmount)    - math::sum(*[_type == "transactions" && transactionType == "expense" && isBorrow == true].transactionAmount)  )}
+export type DASHBOARD_TOTALSResult = {
+  income: number;
+  expense: number;
+  lentMoney: number;
+  cash: number;
+};
+// Variable: PORTFOLIO_SUMMARY
+// Query: {  "cash": (    math::sum(*[_type == "transactions" && transactionType == "income"].transactionAmount)    - math::sum(*[_type == "transactions" && transactionType == "expense" && !coalesce(isBorrow, false)].transactionAmount)    - math::sum(*[_type == "transactions" && transactionType == "expense" && isBorrow == true].transactionAmount)  ),  "notesValue": math::sum(*[_type == "cashNotes"]{"v": denomination * select(  defined(bundles100) || defined(bundles50) || defined(bundles) || defined(looseNotes) =>    coalesce(bundles100, bundles, 0) * 100 + coalesce(bundles50, 0) * 50 + coalesce(looseNotes, 0),  coalesce(quantity, 0))}.v),  "notesCount": count(*[_type == "cashNotes"]),  "notesBundles100": math::sum(*[_type == "cashNotes"]{"n": coalesce(bundles100, bundles, 0)}.n),  "notesBundles50": math::sum(*[_type == "cashNotes"]{"n": coalesce(bundles50, 0)}.n),  "tradingValue": math::sum(*[_type == "tradingInvestment" && status == "active"].currentValue),  "tradingInvested": math::sum(*[_type == "tradingInvestment" && status == "active"].investedAmount),  "tradingCount": count(*[_type == "tradingInvestment" && status == "active"]),  "goldValue": math::sum(*[_type == "goldWealth"].currentValue),  "goldPurchase": math::sum(*[_type == "goldWealth"].purchasePrice),  "goldCount": count(*[_type == "goldWealth"]),  "goldWeight": math::sum(*[_type == "goldWealth"].weightGrams)}
+export type PORTFOLIO_SUMMARYResult = {
+  cash: number;
+  notesValue: number;
+  notesCount: number;
+  notesBundles100: number;
+  notesBundles50: number;
+  tradingValue: number;
+  tradingInvested: number;
+  tradingCount: number;
+  goldValue: number;
+  goldPurchase: number;
+  goldCount: number;
+  goldWeight: number;
+};
 // Variable: ROKDA_TRANSACTIONS
 // Query: *[_type == "transactions" && ($type == "all" || transactionType == $type)] | order(transactionDate desc) {    ...,    _id,    borrower->{        _id,        name,    },    sender->{        _id,        name,    },    receiver->{        _id,        name,    },}
 export type ROKDA_TRANSACTIONSResult = Array<{
@@ -409,22 +483,64 @@ export type ROKDA_TRANSACTIONSResult = Array<{
   _updatedAt: string;
   _rev: string;
   transactionDate: string;
-  transactionAmount: number;
   transactionType: "expense" | "income";
+  transactionAmount: number;
+  transactionDescription?: string;
   isBorrow?: boolean;
   borrower: {
     _id: string;
-    name: string | null;
+    name: string;
   } | null;
   sender: {
     _id: string;
-    name: string | null;
+    name: string;
   } | null;
   receiver: {
     _id: string;
-    name: string | null;
+    name: string;
   } | null;
-  transactionDescription?: string;
+}>;
+// Variable: CASH_NOTES
+// Query: *[_type == "cashNotes"] | order(denomination desc) {  _id,  denomination,  bundles100,  bundles50,  looseNotes,  lastCounted,  notes,  "bundles100Count": coalesce(bundles100, bundles, 0),  "quantity": select(  defined(bundles100) || defined(bundles50) || defined(bundles) || defined(looseNotes) =>    coalesce(bundles100, bundles, 0) * 100 + coalesce(bundles50, 0) * 50 + coalesce(looseNotes, 0),  coalesce(quantity, 0)),  "totalValue": denomination * select(  defined(bundles100) || defined(bundles50) || defined(bundles) || defined(looseNotes) =>    coalesce(bundles100, bundles, 0) * 100 + coalesce(bundles50, 0) * 50 + coalesce(looseNotes, 0),  coalesce(quantity, 0))}
+export type CASH_NOTESResult = Array<{
+  _id: string;
+  denomination: 10 | 100 | 20 | 200 | 50 | 500;
+  bundles100: number;
+  bundles50: number;
+  looseNotes: number;
+  lastCounted: string | null;
+  notes: string | null;
+  bundles100Count: number;
+  quantity: number;
+  totalValue: number;
+}>;
+// Variable: TRADING_INVESTMENTS
+// Query: *[_type == "tradingInvestment"] | order(currentValue desc) {  _id,  name,  platform,  assetType,  status,  purchaseDate,  investedAmount,  currentValue,  notes,  "gainLoss": currentValue - investedAmount}
+export type TRADING_INVESTMENTSResult = Array<{
+  _id: string;
+  name: string;
+  platform: string | null;
+  assetType: "bond" | "etf" | "mutual-fund" | "other" | "stock" | null;
+  status: "active" | "sold" | null;
+  purchaseDate: string | null;
+  investedAmount: number;
+  currentValue: number;
+  notes: string | null;
+  gainLoss: number;
+}>;
+// Variable: GOLD_WEALTH
+// Query: *[_type == "goldWealth"] | order(currentValue desc) {  _id,  itemName,  weightGrams,  purity,  location,  purchaseDate,  purchasePrice,  currentValue,  notes,  "gainLoss": currentValue - purchasePrice}
+export type GOLD_WEALTHResult = Array<{
+  _id: string;
+  itemName: string;
+  weightGrams: number;
+  purity: "18k" | "22k" | "24k" | "other" | null;
+  location: string | null;
+  purchaseDate: string | null;
+  purchasePrice: number;
+  currentValue: number;
+  notes: string | null;
+  gainLoss: number;
 }>;
 
 // Query TypeMap
@@ -433,6 +549,11 @@ declare module "@sanity/client" {
   interface SanityQueries {
     '*[_type == "home"][0]': HOMEResult;
     '*[_type == "settings"][0]': SETTINGSResult;
+    '{\n  "income": math::sum(*[_type == "transactions" && transactionType == "income"].transactionAmount),\n  "expense": math::sum(*[_type == "transactions" && transactionType == "expense" && !coalesce(isBorrow, false)].transactionAmount),\n  "lentMoney": math::sum(*[_type == "transactions" && transactionType == "expense" && isBorrow == true].transactionAmount),\n  "cash": (\n    math::sum(*[_type == "transactions" && transactionType == "income"].transactionAmount)\n    - math::sum(*[_type == "transactions" && transactionType == "expense" && !coalesce(isBorrow, false)].transactionAmount)\n    - math::sum(*[_type == "transactions" && transactionType == "expense" && isBorrow == true].transactionAmount)\n  )\n}': DASHBOARD_TOTALSResult;
+    '{\n  "cash": (\n    math::sum(*[_type == "transactions" && transactionType == "income"].transactionAmount)\n    - math::sum(*[_type == "transactions" && transactionType == "expense" && !coalesce(isBorrow, false)].transactionAmount)\n    - math::sum(*[_type == "transactions" && transactionType == "expense" && isBorrow == true].transactionAmount)\n  ),\n  "notesValue": math::sum(*[_type == "cashNotes"]{"v": denomination * select(\n  defined(bundles100) || defined(bundles50) || defined(bundles) || defined(looseNotes) =>\n    coalesce(bundles100, bundles, 0) * 100 + coalesce(bundles50, 0) * 50 + coalesce(looseNotes, 0),\n  coalesce(quantity, 0)\n)}.v),\n  "notesCount": count(*[_type == "cashNotes"]),\n  "notesBundles100": math::sum(*[_type == "cashNotes"]{"n": coalesce(bundles100, bundles, 0)}.n),\n  "notesBundles50": math::sum(*[_type == "cashNotes"]{"n": coalesce(bundles50, 0)}.n),\n  "tradingValue": math::sum(*[_type == "tradingInvestment" && status == "active"].currentValue),\n  "tradingInvested": math::sum(*[_type == "tradingInvestment" && status == "active"].investedAmount),\n  "tradingCount": count(*[_type == "tradingInvestment" && status == "active"]),\n  "goldValue": math::sum(*[_type == "goldWealth"].currentValue),\n  "goldPurchase": math::sum(*[_type == "goldWealth"].purchasePrice),\n  "goldCount": count(*[_type == "goldWealth"]),\n  "goldWeight": math::sum(*[_type == "goldWealth"].weightGrams)\n}': PORTFOLIO_SUMMARYResult;
     '*[_type == "transactions" && ($type == "all" || transactionType == $type)] | order(transactionDate desc) {\n    ...,\n    _id,\n    borrower->{\n        _id,\n        name,\n    },\n    sender->{\n        _id,\n        name,\n    },\n    receiver->{\n        _id,\n        name,\n    },\n}': ROKDA_TRANSACTIONSResult;
+    '*[_type == "cashNotes"] | order(denomination desc) {\n  _id,\n  denomination,\n  bundles100,\n  bundles50,\n  looseNotes,\n  lastCounted,\n  notes,\n  "bundles100Count": coalesce(bundles100, bundles, 0),\n  "quantity": select(\n  defined(bundles100) || defined(bundles50) || defined(bundles) || defined(looseNotes) =>\n    coalesce(bundles100, bundles, 0) * 100 + coalesce(bundles50, 0) * 50 + coalesce(looseNotes, 0),\n  coalesce(quantity, 0)\n),\n  "totalValue": denomination * select(\n  defined(bundles100) || defined(bundles50) || defined(bundles) || defined(looseNotes) =>\n    coalesce(bundles100, bundles, 0) * 100 + coalesce(bundles50, 0) * 50 + coalesce(looseNotes, 0),\n  coalesce(quantity, 0)\n)\n}': CASH_NOTESResult;
+    '*[_type == "tradingInvestment"] | order(currentValue desc) {\n  _id,\n  name,\n  platform,\n  assetType,\n  status,\n  purchaseDate,\n  investedAmount,\n  currentValue,\n  notes,\n  "gainLoss": currentValue - investedAmount\n}': TRADING_INVESTMENTSResult;
+    '*[_type == "goldWealth"] | order(currentValue desc) {\n  _id,\n  itemName,\n  weightGrams,\n  purity,\n  location,\n  purchaseDate,\n  purchasePrice,\n  currentValue,\n  notes,\n  "gainLoss": currentValue - purchasePrice\n}': GOLD_WEALTHResult;
   }
 }

@@ -1,14 +1,14 @@
 "use client";
 
-import { IndianRupee } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import {IndianRupee} from "lucide-react";
+import {useEffect, useState} from "react";
+import {useRouter} from "next/navigation";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {Alert, AlertDescription} from "@/components/ui/alert";
+import {Button} from "@/components/ui/button";
+import {Card, CardContent} from "@/components/ui/card";
+import {Input} from "@/components/ui/input";
+import {Label} from "@/components/ui/label";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -30,8 +30,8 @@ export function LoginForm() {
     try {
       const response = await fetch("/api/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({email, password}),
       });
 
       if (response.ok) {
@@ -48,7 +48,7 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="overflow-hidden py-0 rounded-2xl border shadow-lg">
+    <Card className="overflow-hidden rounded-2xl border py-0 shadow-lg">
       <CardContent className="grid p-0 md:grid-cols-5">
         <div className="relative hidden bg-linear-to-br from-zinc-900 via-zinc-800 to-emerald-900 p-8 text-white md:col-span-2 md:flex md:flex-col md:justify-between">
           <div>

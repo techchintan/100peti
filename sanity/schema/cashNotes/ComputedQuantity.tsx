@@ -17,14 +17,12 @@ export function getNoteQuantity(
   legacyBundles?: number | null,
 ) {
   const count100 = bundles100 ?? legacyBundles ?? 0;
-  return count100 * NOTES_PER_BUNDLE_100 + (bundles50 ?? 0) * NOTES_PER_BUNDLE_50 + (looseNotes ?? 0);
+  return (
+    count100 * NOTES_PER_BUNDLE_100 + (bundles50 ?? 0) * NOTES_PER_BUNDLE_50 + (looseNotes ?? 0)
+  );
 }
 
-export function formatBundleBreakdown(
-  bundles100: number,
-  bundles50: number,
-  looseNotes: number,
-) {
+export function formatBundleBreakdown(bundles100: number, bundles50: number, looseNotes: number) {
   const parts: string[] = [];
 
   if (bundles100 > 0) {

@@ -69,7 +69,9 @@ function MarkReturnedButton({row}: {row: RokdaRow}) {
                   return;
                 }
 
-                const payload = (await response.json().catch(() => null)) as {error?: string} | null;
+                const payload = (await response.json().catch(() => null)) as {
+                  error?: string;
+                } | null;
                 toast.error(payload?.error ?? "Update failed");
               } catch (error) {
                 console.error("Failed to record returned cash:", error);
@@ -89,7 +91,9 @@ export const columns: ColumnDef<RokdaRow>[] = [
   {
     accessorKey: "transactionDate",
     header: "Date",
-    cell: ({row}) => <span className="whitespace-nowrap">{formatDate(row.original.transactionDate)}</span>,
+    cell: ({row}) => (
+      <span className="whitespace-nowrap">{formatDate(row.original.transactionDate)}</span>
+    ),
   },
   {
     accessorKey: "transactionAmount",
@@ -112,12 +116,16 @@ export const columns: ColumnDef<RokdaRow>[] = [
   {
     accessorKey: "transactionType",
     header: ({column}) => (
-      <Button variant="ghost" className="-ml-3" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+      <Button
+        variant="ghost"
+        className="-ml-3"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
         Type
       </Button>
     ),
     cell: ({row}) => (
-      <span className="bg-zinc-100 rounded-full px-2.5 py-1 text-xs font-medium capitalize">
+      <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium capitalize">
         {row.original.transactionType}
       </span>
     ),
@@ -126,7 +134,9 @@ export const columns: ColumnDef<RokdaRow>[] = [
     accessorKey: "isBorrow",
     header: "Lent?",
     cell: ({row}) => (
-      <span className={row.original.isBorrow ? "font-medium text-amber-700" : "text-muted-foreground"}>
+      <span
+        className={row.original.isBorrow ? "font-medium text-amber-700" : "text-muted-foreground"}
+      >
         {row.original.isBorrow ? "Yes" : "No"}
       </span>
     ),
@@ -150,7 +160,10 @@ export const columns: ColumnDef<RokdaRow>[] = [
     accessorKey: "transactionDescription",
     header: "Note",
     cell: ({row}) => (
-      <span className="block max-w-[280px] truncate" title={row.original.transactionDescription || undefined}>
+      <span
+        className="block max-w-[280px] truncate"
+        title={row.original.transactionDescription || undefined}
+      >
         {row.original.transactionDescription || "—"}
       </span>
     ),

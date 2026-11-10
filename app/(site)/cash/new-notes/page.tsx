@@ -42,7 +42,12 @@ export default async function NewNotesPage() {
       <SectionNav items={[...wealthSections]} activeHref="/cash/new-notes" />
 
       <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={Banknote} label="Total Note Value" tone="default" value={formatInr(totalValue)} />
+        <StatCard
+          icon={Banknote}
+          label="Total Note Value"
+          tone="default"
+          value={formatInr(totalValue)}
+        />
         <StatCard
           icon={Layers}
           label="Total Notes"
@@ -85,44 +90,56 @@ export default async function NewNotesPage() {
 
           <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
             <div className="overflow-x-auto">
-            <table className="w-full min-w-[800px] text-left text-sm">
-              <thead className="bg-zinc-50 text-xs tracking-wide text-zinc-500 uppercase">
-                <tr>
-                  <th className="px-5 py-3 font-medium">Denomination</th>
-                  <th className="px-5 py-3 font-medium">×100</th>
-                  <th className="px-5 py-3 font-medium">×50</th>
-                  <th className="px-5 py-3 font-medium">Loose</th>
-                  <th className="px-5 py-3 font-medium">Total notes</th>
-                  <th className="px-5 py-3 font-medium">Value</th>
-                  <th className="px-5 py-3 font-medium">Last counted</th>
-                  <th className="px-5 py-3 font-medium">Notes</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item) => (
-                  <tr key={item._id} className="border-t hover:bg-zinc-50/80">
-                    <td className="px-5 py-4 font-semibold text-zinc-900">{formatInr(item.denomination)}</td>
-                    <td className="px-5 py-4">{item.bundles100Count}</td>
-                    <td className="px-5 py-4">{item.bundles50 ?? 0}</td>
-                    <td className="px-5 py-4">{item.looseNotes ?? 0}</td>
-                    <td className="px-5 py-4 font-medium">{item.quantity.toLocaleString("en-IN")}</td>
-                    <td className="px-5 py-4 font-medium text-emerald-700">{formatInr(item.totalValue)}</td>
-                    <td className="px-5 py-4 text-zinc-600">{formatDate(item.lastCounted)}</td>
-                    <td className="max-w-xs truncate px-5 py-4 text-zinc-500">{item.notes || "—"}</td>
+              <table className="w-full min-w-[800px] text-left text-sm">
+                <thead className="bg-zinc-50 text-xs tracking-wide text-zinc-500 uppercase">
+                  <tr>
+                    <th className="px-5 py-3 font-medium">Denomination</th>
+                    <th className="px-5 py-3 font-medium">×100</th>
+                    <th className="px-5 py-3 font-medium">×50</th>
+                    <th className="px-5 py-3 font-medium">Loose</th>
+                    <th className="px-5 py-3 font-medium">Total notes</th>
+                    <th className="px-5 py-3 font-medium">Value</th>
+                    <th className="px-5 py-3 font-medium">Last counted</th>
+                    <th className="px-5 py-3 font-medium">Notes</th>
                   </tr>
-                ))}
-              </tbody>
-              <tfoot className="border-t bg-zinc-50">
-                <tr>
-                  <td className="px-5 py-4 font-semibold" colSpan={4}>
-                    Grand total
-                  </td>
-                  <td className="px-5 py-4 font-semibold">{totalNotes.toLocaleString("en-IN")} notes</td>
-                  <td className="px-5 py-4 text-lg font-semibold text-emerald-700">{formatInr(totalValue)}</td>
-                  <td colSpan={2} />
-                </tr>
-              </tfoot>
-            </table>
+                </thead>
+                <tbody>
+                  {items.map((item) => (
+                    <tr key={item._id} className="border-t hover:bg-zinc-50/80">
+                      <td className="px-5 py-4 font-semibold text-zinc-900">
+                        {formatInr(item.denomination)}
+                      </td>
+                      <td className="px-5 py-4">{item.bundles100Count}</td>
+                      <td className="px-5 py-4">{item.bundles50 ?? 0}</td>
+                      <td className="px-5 py-4">{item.looseNotes ?? 0}</td>
+                      <td className="px-5 py-4 font-medium">
+                        {item.quantity.toLocaleString("en-IN")}
+                      </td>
+                      <td className="px-5 py-4 font-medium text-emerald-700">
+                        {formatInr(item.totalValue)}
+                      </td>
+                      <td className="px-5 py-4 text-zinc-600">{formatDate(item.lastCounted)}</td>
+                      <td className="max-w-xs truncate px-5 py-4 text-zinc-500">
+                        {item.notes || "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot className="border-t bg-zinc-50">
+                  <tr>
+                    <td className="px-5 py-4 font-semibold" colSpan={4}>
+                      Grand total
+                    </td>
+                    <td className="px-5 py-4 font-semibold">
+                      {totalNotes.toLocaleString("en-IN")} notes
+                    </td>
+                    <td className="px-5 py-4 text-lg font-semibold text-emerald-700">
+                      {formatInr(totalValue)}
+                    </td>
+                    <td colSpan={2} />
+                  </tr>
+                </tfoot>
+              </table>
             </div>
           </div>
         </>

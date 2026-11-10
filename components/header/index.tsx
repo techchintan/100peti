@@ -75,7 +75,11 @@ export default function Header(props: SettingsType) {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link key={item._key} className={linkClass(item.link === pathname)} href={item.link || "#"}>
+              <Link
+                key={item._key}
+                className={linkClass(item.link === pathname)}
+                href={item.link || "#"}
+              >
                 {item.label}
               </Link>
             ),

@@ -37,7 +37,9 @@ const EMPTY_PORTFOLIO: PortfolioSummary = {
   goldWeight: 0,
 };
 
-export function normalizeDashboardTotals(totals?: Partial<DashboardTotals> | null): DashboardTotals {
+export function normalizeDashboardTotals(
+  totals?: Partial<DashboardTotals> | null,
+): DashboardTotals {
   return {
     income: totals?.income ?? 0,
     expense: totals?.expense ?? 0,

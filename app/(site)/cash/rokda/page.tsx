@@ -24,9 +24,24 @@ export default async function RokdaPage() {
       <SectionNav items={[...wealthSections]} activeHref="/cash/rokda" />
 
       <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={TrendingUp} label="Total Income" tone="income" value={formatInr(totals.income)} />
-        <StatCard icon={TrendingDown} label="Total Expense" tone="expense" value={formatInr(totals.expense)} />
-        <StatCard icon={HandCoins} label="Lent Money" tone="gold" value={formatInr(totals.lentMoney)} />
+        <StatCard
+          icon={TrendingUp}
+          label="Total Income"
+          tone="income"
+          value={formatInr(totals.income)}
+        />
+        <StatCard
+          icon={TrendingDown}
+          label="Total Expense"
+          tone="expense"
+          value={formatInr(totals.expense)}
+        />
+        <StatCard
+          icon={HandCoins}
+          label="Lent Money"
+          tone="gold"
+          value={formatInr(totals.lentMoney)}
+        />
         <StatCard icon={Wallet} label="Cash at Home" tone="cash" value={formatInr(totals.cash)} />
       </div>
 

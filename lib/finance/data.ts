@@ -37,35 +37,30 @@ export type HomePageData = {
 };
 
 export async function getHomePageData(): Promise<HomePageData> {
-  const [
-    {data: transactions},
-    {data: totals},
-    {data: portfolio},
-    {data: home},
-    {data: cashNotes},
-  ] = await Promise.all([
-    sanityFetch<ROKDA_TRANSACTIONSResult>({
-      query: ROKDA_TRANSACTIONS,
-      params: {type: "all"},
-      options: LIVE_FETCH_OPTIONS,
-    }),
-    sanityFetch<DashboardTotals>({
-      query: DASHBOARD_TOTALS,
-      options: LIVE_FETCH_OPTIONS,
-    }),
-    sanityFetch<PortfolioSummary>({
-      query: PORTFOLIO_SUMMARY,
-      options: LIVE_FETCH_OPTIONS,
-    }),
-    sanityFetch<Home>({
-      query: HOME,
-      options: LIVE_FETCH_OPTIONS,
-    }),
-    sanityFetch<CashNote[]>({
-      query: CASH_NOTES,
-      options: LIVE_FETCH_OPTIONS,
-    }),
-  ]);
+  const [{data: transactions}, {data: totals}, {data: portfolio}, {data: home}, {data: cashNotes}] =
+    await Promise.all([
+      sanityFetch<ROKDA_TRANSACTIONSResult>({
+        query: ROKDA_TRANSACTIONS,
+        params: {type: "all"},
+        options: LIVE_FETCH_OPTIONS,
+      }),
+      sanityFetch<DashboardTotals>({
+        query: DASHBOARD_TOTALS,
+        options: LIVE_FETCH_OPTIONS,
+      }),
+      sanityFetch<PortfolioSummary>({
+        query: PORTFOLIO_SUMMARY,
+        options: LIVE_FETCH_OPTIONS,
+      }),
+      sanityFetch<Home>({
+        query: HOME,
+        options: LIVE_FETCH_OPTIONS,
+      }),
+      sanityFetch<CashNote[]>({
+        query: CASH_NOTES,
+        options: LIVE_FETCH_OPTIONS,
+      }),
+    ]);
 
   const summary = normalizeDashboardTotals(totals);
   const wealth = enrichWealthFromCashNotes(normalizePortfolio(portfolio, summary.cash), cashNotes);

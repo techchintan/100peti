@@ -92,7 +92,11 @@ export const goldWealth = defineType({
     },
     prepare: ({itemName, weightGrams, purity, currentValue}) => ({
       title: itemName || "Gold item",
-      subtitle: [weightGrams ? `${weightGrams}g` : null, purity?.toUpperCase(), currentValue ? `₹${currentValue}` : null]
+      subtitle: [
+        weightGrams ? `${weightGrams}g` : null,
+        purity?.toUpperCase(),
+        currentValue ? `₹${currentValue}` : null,
+      ]
         .filter(Boolean)
         .join(" · "),
       media: sanityIcon(Gem),

@@ -32,7 +32,9 @@ export default async function HomePage() {
     <div className="space-y-10 pb-8">
       <section className="relative overflow-hidden rounded-3xl border bg-linear-to-br from-zinc-900 via-zinc-800 to-zinc-900 px-6 py-10 text-white shadow-lg sm:px-10">
         <div className="relative z-10 max-w-3xl space-y-4">
-          <p className="text-xs font-semibold tracking-[0.2em] text-zinc-400 uppercase">Family Wealth</p>
+          <p className="text-xs font-semibold tracking-[0.2em] text-zinc-400 uppercase">
+            Family Wealth
+          </p>
           <h1 className="font-serif text-4xl font-semibold tracking-tight sm:text-5xl">
             {home?.tagline || "Sudani Family Finance"}
           </h1>

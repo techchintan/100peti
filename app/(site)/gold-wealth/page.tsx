@@ -37,8 +37,19 @@ export default async function GoldWealthPage() {
       <SectionNav items={[...wealthSections]} activeHref="/gold-wealth" />
 
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
-        <StatCard icon={Gem} label="Current Value" tone="gold" value={formatInr(summary.goldValue)} />
-        <StatCard icon={Scale} label="Total Weight" tone="default" value={`${summary.goldWeight.toFixed(2)} g`} hint={`${summary.goldCount} items`} />
+        <StatCard
+          icon={Gem}
+          label="Current Value"
+          tone="gold"
+          value={formatInr(summary.goldValue)}
+        />
+        <StatCard
+          icon={Scale}
+          label="Total Weight"
+          tone="default"
+          value={`${summary.goldWeight.toFixed(2)} g`}
+          hint={`${summary.goldCount} items`}
+        />
         <StatCard
           icon={gain >= 0 ? TrendingUp : TrendingDown}
           label="Gain / Loss"
@@ -65,41 +76,45 @@ export default async function GoldWealthPage() {
           <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[760px] text-left text-sm">
-              <thead className="bg-zinc-50 text-xs tracking-wide text-zinc-500 uppercase">
-                <tr>
-                  <th className="px-5 py-3 font-medium">Item</th>
-                  <th className="px-5 py-3 font-medium">Weight</th>
-                  <th className="px-5 py-3 font-medium">Purity</th>
-                  <th className="px-5 py-3 font-medium">Purchase</th>
-                  <th className="px-5 py-3 font-medium">Current</th>
-                  <th className="px-5 py-3 font-medium">P&amp;L</th>
-                  <th className="px-5 py-3 font-medium">Location</th>
-                </tr>
-              </thead>
-              <tbody>
-                {holdings.map((item) => (
-                  <tr key={item._id} className="border-t hover:bg-zinc-50/80">
-                    <td className="px-5 py-4">
-                      <p className="font-medium text-zinc-900">{item.itemName}</p>
-                      <p className="text-muted-foreground text-xs">{formatDate(item.purchaseDate)}</p>
-                    </td>
-                    <td className="px-5 py-4">{item.weightGrams} g</td>
-                    <td className="px-5 py-4 uppercase">{item.purity || "—"}</td>
-                    <td className="px-5 py-4">{formatInr(item.purchasePrice)}</td>
-                    <td className="px-5 py-4 font-medium text-amber-700">{formatInr(item.currentValue)}</td>
-                    <td
-                      className={cn(
-                        "px-5 py-4 font-medium",
-                        item.gainLoss >= 0 ? "text-emerald-600" : "text-rose-600",
-                      )}
-                    >
-                      {formatInr(item.gainLoss)}
-                    </td>
-                    <td className="px-5 py-4 text-zinc-600">{item.location || "—"}</td>
+                <thead className="bg-zinc-50 text-xs tracking-wide text-zinc-500 uppercase">
+                  <tr>
+                    <th className="px-5 py-3 font-medium">Item</th>
+                    <th className="px-5 py-3 font-medium">Weight</th>
+                    <th className="px-5 py-3 font-medium">Purity</th>
+                    <th className="px-5 py-3 font-medium">Purchase</th>
+                    <th className="px-5 py-3 font-medium">Current</th>
+                    <th className="px-5 py-3 font-medium">P&amp;L</th>
+                    <th className="px-5 py-3 font-medium">Location</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {holdings.map((item) => (
+                    <tr key={item._id} className="border-t hover:bg-zinc-50/80">
+                      <td className="px-5 py-4">
+                        <p className="font-medium text-zinc-900">{item.itemName}</p>
+                        <p className="text-muted-foreground text-xs">
+                          {formatDate(item.purchaseDate)}
+                        </p>
+                      </td>
+                      <td className="px-5 py-4">{item.weightGrams} g</td>
+                      <td className="px-5 py-4 uppercase">{item.purity || "—"}</td>
+                      <td className="px-5 py-4">{formatInr(item.purchasePrice)}</td>
+                      <td className="px-5 py-4 font-medium text-amber-700">
+                        {formatInr(item.currentValue)}
+                      </td>
+                      <td
+                        className={cn(
+                          "px-5 py-4 font-medium",
+                          item.gainLoss >= 0 ? "text-emerald-600" : "text-rose-600",
+                        )}
+                      >
+                        {formatInr(item.gainLoss)}
+                      </td>
+                      <td className="px-5 py-4 text-zinc-600">{item.location || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

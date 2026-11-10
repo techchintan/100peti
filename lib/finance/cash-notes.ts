@@ -35,6 +35,8 @@ export function getCashNoteQuantity(note: {
   return note.quantity ?? 0;
 }
 
-export function getCashNoteValue(note: {denomination: number} & Parameters<typeof getCashNoteQuantity>[0]) {
+export function getCashNoteValue(
+  note: {denomination: number} & Parameters<typeof getCashNoteQuantity>[0],
+) {
   return note.denomination * getCashNoteQuantity(note);
 }

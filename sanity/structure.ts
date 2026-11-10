@@ -5,11 +5,7 @@ import {FinanceOverview} from "./studio/FinanceOverview";
 
 const DATE_DESC = [{field: "transactionDate", direction: "desc" as const}];
 
-const transactionList = (
-  S: Parameters<StructureResolver>[0],
-  title: string,
-  filter: string,
-) =>
+const transactionList = (S: Parameters<StructureResolver>[0], title: string, filter: string) =>
   S.documentList()
     .title(title)
     .schemaType("transactions")
@@ -78,7 +74,7 @@ export const structure: StructureResolver = (S) =>
             .title("Wealth")
             .items([
               S.listItem()
-                .title("New Notes")  
+                .title("New Notes")
                 .icon(StudioIcons.cashNotes)
                 .child(
                   S.documentTypeList("cashNotes")

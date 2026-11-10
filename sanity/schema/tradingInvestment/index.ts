@@ -100,7 +100,11 @@ export const tradingInvestment = defineType({
     },
     prepare: ({name, platform, currentValue, status}) => ({
       title: name || "Unnamed holding",
-      subtitle: [platform, status === "sold" ? "Sold" : null, currentValue ? `₹${currentValue}` : null]
+      subtitle: [
+        platform,
+        status === "sold" ? "Sold" : null,
+        currentValue ? `₹${currentValue}` : null,
+      ]
         .filter(Boolean)
         .join(" · "),
       media: sanityIcon(LineChart),

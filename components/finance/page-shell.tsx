@@ -17,7 +17,12 @@ type PageHeaderProps = {
 
 export function PageHeader({title, description, eyebrow, action, className}: PageHeaderProps) {
   return (
-    <div className={cn("mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between", className)}>
+    <div
+      className={cn(
+        "mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between",
+        className,
+      )}
+    >
       <div className="space-y-2">
         {eyebrow ? (
           <p className="text-muted-foreground text-xs font-semibold tracking-[0.18em] uppercase">
@@ -27,7 +32,9 @@ export function PageHeader({title, description, eyebrow, action, className}: Pag
         <h1 className="font-serif text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
           {title}
         </h1>
-        {description ? <p className="text-muted-foreground max-w-2xl text-sm sm:text-base">{description}</p> : null}
+        {description ? (
+          <p className="text-muted-foreground max-w-2xl text-sm sm:text-base">{description}</p>
+        ) : null}
       </div>
       {action ? (
         <Link
@@ -67,7 +74,9 @@ export function StatCard({label, value, hint, icon: Icon, tone = "default", href
         <div className={cn("rounded-xl p-2.5", toneStyles[tone])}>
           <Icon className="size-5" strokeWidth={1.75} />
         </div>
-        {href ? <ArrowUpRight className="text-muted-foreground size-4 opacity-0 transition-opacity group-hover:opacity-100" /> : null}
+        {href ? (
+          <ArrowUpRight className="text-muted-foreground size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        ) : null}
       </div>
       <div className="mt-4 space-y-1">
         <p className="text-muted-foreground text-sm">{label}</p>
@@ -110,8 +119,12 @@ export function SectionNav({items, activeHref}: {items: SectionNavItem[]; active
                 : "bg-card hover:border-primary/30 hover:bg-zinc-50",
             )}
           >
-            <p className={cn("font-medium", active ? "text-primary" : "text-zinc-900")}>{item.label}</p>
-            {item.description ? <p className="text-muted-foreground mt-1 text-xs">{item.description}</p> : null}
+            <p className={cn("font-medium", active ? "text-primary" : "text-zinc-900")}>
+              {item.label}
+            </p>
+            {item.description ? (
+              <p className="text-muted-foreground mt-1 text-xs">{item.description}</p>
+            ) : null}
           </Link>
         );
       })}

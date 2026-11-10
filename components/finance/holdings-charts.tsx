@@ -1,16 +1,6 @@
 "use client";
 
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Label,
-  Pie,
-  PieChart,
-  XAxis,
-  YAxis,
-} from "recharts";
+import {Bar, BarChart, CartesianGrid, Cell, Label, Pie, PieChart, XAxis, YAxis} from "recharts";
 
 import {
   ChartConfig,
@@ -63,7 +53,10 @@ export function WealthAllocationChart({data, netWorth}: {data: WealthSlice[]; ne
   }
 
   return (
-    <ChartContainer config={wealthConfig} className="mx-auto aspect-square min-h-[280px] max-h-[320px] w-full">
+    <ChartContainer
+      config={wealthConfig}
+      className="mx-auto aspect-square max-h-[320px] min-h-[280px] w-full"
+    >
       <PieChart>
         <ChartTooltip
           content={
@@ -99,10 +92,18 @@ export function WealthAllocationChart({data, netWorth}: {data: WealthSlice[]; ne
               if (!viewBox || !("cx" in viewBox) || !("cy" in viewBox)) return null;
               return (
                 <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
-                  <tspan x={viewBox.cx} y={(viewBox.cy ?? 0) - 8} className="fill-muted-foreground text-xs">
+                  <tspan
+                    x={viewBox.cx}
+                    y={(viewBox.cy ?? 0) - 8}
+                    className="fill-muted-foreground text-xs"
+                  >
                     Net Worth
                   </tspan>
-                  <tspan x={viewBox.cx} y={(viewBox.cy ?? 0) + 14} className="fill-foreground text-sm font-semibold">
+                  <tspan
+                    x={viewBox.cx}
+                    y={(viewBox.cy ?? 0) + 14}
+                    className="fill-foreground text-sm font-semibold"
+                  >
                     {formatInr(netWorth)}
                   </tspan>
                 </text>
@@ -122,11 +123,19 @@ export function InvestmentSummaryChart({data}: {data: InvestmentCategory[]}) {
   }
 
   return (
-    <ChartContainer config={investmentConfig} className="aspect-video min-h-[280px] w-full max-w-none">
+    <ChartContainer
+      config={investmentConfig}
+      className="aspect-video min-h-[280px] w-full max-w-none"
+    >
       <BarChart accessibilityLayer data={data}>
         <CartesianGrid vertical={false} strokeDasharray="3 3" />
         <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={12} />
-        <YAxis tickLine={false} axisLine={false} fontSize={12} tickFormatter={(v) => formatInr(v)} />
+        <YAxis
+          tickLine={false}
+          axisLine={false}
+          fontSize={12}
+          tickFormatter={(v) => formatInr(v)}
+        />
         <ChartTooltip content={<ChartTooltipContent />} />
         <ChartLegend content={<ChartLegendContent />} />
         <Bar dataKey="invested" fill="var(--color-invested)" radius={4} />
@@ -147,8 +156,21 @@ export function LentByPersonChart({data}: {data: LentByPerson[]}) {
     <ChartContainer config={lentConfig} className="w-full max-w-none" style={{height: chartHeight}}>
       <BarChart accessibilityLayer data={data} layout="vertical" margin={{left: 8, right: 16}}>
         <CartesianGrid horizontal={false} strokeDasharray="3 3" />
-        <XAxis type="number" tickLine={false} axisLine={false} fontSize={12} tickFormatter={(v) => formatInr(v)} />
-        <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} fontSize={12} width={96} />
+        <XAxis
+          type="number"
+          tickLine={false}
+          axisLine={false}
+          fontSize={12}
+          tickFormatter={(v) => formatInr(v)}
+        />
+        <YAxis
+          type="category"
+          dataKey="name"
+          tickLine={false}
+          axisLine={false}
+          fontSize={12}
+          width={96}
+        />
         <ChartTooltip
           content={
             <ChartTooltipContent
@@ -173,7 +195,12 @@ export function NotesDenominationChart({data}: {data: DenominationBreakdown[]}) 
       <BarChart accessibilityLayer data={data}>
         <CartesianGrid vertical={false} strokeDasharray="3 3" />
         <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={12} />
-        <YAxis tickLine={false} axisLine={false} fontSize={12} tickFormatter={(v) => formatInr(v)} />
+        <YAxis
+          tickLine={false}
+          axisLine={false}
+          fontSize={12}
+          tickFormatter={(v) => formatInr(v)}
+        />
         <ChartTooltip content={<ChartTooltipContent />} />
         <Bar dataKey="value" fill="var(--color-value)" radius={4} />
       </BarChart>
@@ -189,11 +216,28 @@ export function HoldingsPnLChart({data, title}: {data: HoldingPnL[]; title: stri
   const chartHeight = Math.max(240, data.length * 48);
 
   return (
-    <ChartContainer config={holdingConfig} className="w-full max-w-none" style={{height: chartHeight}}>
+    <ChartContainer
+      config={holdingConfig}
+      className="w-full max-w-none"
+      style={{height: chartHeight}}
+    >
       <BarChart accessibilityLayer data={data} layout="vertical" margin={{left: 8, right: 16}}>
         <CartesianGrid horizontal={false} strokeDasharray="3 3" />
-        <XAxis type="number" tickLine={false} axisLine={false} fontSize={12} tickFormatter={(v) => formatInr(v)} />
-        <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} fontSize={12} width={108} />
+        <XAxis
+          type="number"
+          tickLine={false}
+          axisLine={false}
+          fontSize={12}
+          tickFormatter={(v) => formatInr(v)}
+        />
+        <YAxis
+          type="category"
+          dataKey="name"
+          tickLine={false}
+          axisLine={false}
+          fontSize={12}
+          width={108}
+        />
         <ChartTooltip content={<ChartTooltipContent />} />
         <ChartLegend content={<ChartLegendContent />} />
         <Bar dataKey="invested" fill="var(--color-invested)" radius={4} />
@@ -216,8 +260,21 @@ export function HoldingsGainChart({data, className}: {data: HoldingPnL[]; classN
     >
       <BarChart accessibilityLayer data={data} layout="vertical" margin={{left: 8, right: 16}}>
         <CartesianGrid horizontal={false} strokeDasharray="3 3" />
-        <XAxis type="number" tickLine={false} axisLine={false} fontSize={12} tickFormatter={(v) => formatInr(v)} />
-        <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} fontSize={12} width={108} />
+        <XAxis
+          type="number"
+          tickLine={false}
+          axisLine={false}
+          fontSize={12}
+          tickFormatter={(v) => formatInr(v)}
+        />
+        <YAxis
+          type="category"
+          dataKey="name"
+          tickLine={false}
+          axisLine={false}
+          fontSize={12}
+          width={108}
+        />
         <ChartTooltip
           content={
             <ChartTooltipContent
@@ -257,7 +314,9 @@ export function HoldingsChartsSection({
           <HoldingsPnLChart data={holdings} title={title} />
         </div>
         <div>
-          <p className="text-muted-foreground mb-3 text-xs font-medium tracking-wide uppercase">Gain / loss</p>
+          <p className="text-muted-foreground mb-3 text-xs font-medium tracking-wide uppercase">
+            Gain / loss
+          </p>
           <HoldingsGainChart data={holdings} className="w-full max-w-none" />
         </div>
       </div>
@@ -274,7 +333,8 @@ export function InvestmentSummaryFooter({data}: {data: InvestmentCategory[]}) {
         <span key={row.key}>
           {row.label}:{" "}
           <strong className={row.gain >= 0 ? "text-emerald-600" : "text-rose-600"}>
-            {formatInr(row.gain)} ({formatPercent(row.invested ? (row.gain / row.invested) * 100 : 0)})
+            {formatInr(row.gain)} (
+            {formatPercent(row.invested ? (row.gain / row.invested) * 100 : 0)})
           </strong>
         </span>
       ))}
