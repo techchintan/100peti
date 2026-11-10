@@ -2,6 +2,14 @@ import type {ROKDA_TRANSACTIONSResult} from "@/sanity.types";
 import {getGoldGain, getTradingGain, type PortfolioSummary} from "@/lib/wealth";
 
 import {
+  describeDiwaliYearWindow,
+  formatDiwaliYearLabel,
+  getDiwaliYearKey,
+  getDiwaliYearStartDate,
+  isDateInDiwaliYear,
+  listDiwaliYearKeys,
+} from "./diwali-year";
+import {
   formatFinancialYearLabel,
   getFinancialYearKey,
   getFinancialYearStartDate,
@@ -153,7 +161,9 @@ export function savingsRateFromTotals(totals: Pick<CashFlowTotals, "income" | "n
   return totals.income > 0 ? (totals.netCash / totals.income) * 100 : 0;
 }
 
-export function computeCashBalanceFromTransactions(transactions?: CashFlowTransaction[] | null): number {
+export function computeCashBalanceFromTransactions(
+  transactions?: CashFlowTransaction[] | null,
+): number {
   return aggregateCashFlowTotals(buildAllTimeCashFlowPeriod(transactions)).netCash;
 }
 
@@ -162,20 +172,57 @@ function buildAllTimeCashFlowPeriod(transactions?: CashFlowTransaction[] | null)
   return [{label: "All time", sortKey: "all", ...totals}];
 }
 
-function aggregateCashFlowTotalsFromTransactions(transactions?: CashFlowTransaction[] | null): CashFlowTotals {
+function aggregateCashFlowTotalsFromTransactions(
+  transactions?: CashFlowTransaction[] | null,
+): CashFlowTotals {
   const map = new Map<string, CashFlowPeriod>();
   for (const transaction of transactions ?? []) {
     upsertCashFlowPeriod(map, "all", "All time", transaction);
   }
   const period = map.get("all");
   return period
-    ? {income: period.income, expense: period.expense, lentMoney: period.lentMoney, netCash: period.netCash}
+    ? {
+        income: period.income,
+        expense: period.expense,
+        lentMoney: period.lentMoney,
+        netCash: period.netCash,
+      }
     : {income: 0, expense: 0, lentMoney: 0, netCash: 0};
+}
+
+function monthPeriodFromDate(dateInput: string): {sortKey: string; label: string} {
+  const match = /^(\d{4})-(\d{2})/.exec(dateInput);
+  if (match) {
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    return {
+      sortKey: `${match[1]}-${match[2]}`,
+      label: new Date(year, month - 1, 1).toLocaleDateString("en-IN", {
+        month: "short",
+        year: "numeric",
+      }),
+    };
+  }
+
+  const date = new Date(dateInput);
+  return {
+    sortKey: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`,
+    label: date.toLocaleDateString("en-IN", {month: "short", year: "numeric"}),
+  };
 }
 
 export function getFinancialYearOptions(transactions?: CashFlowTransaction[] | null) {
   const keys = listFinancialYearKeys((transactions ?? []).map((t) => t.transactionDate));
   return keys.map((key) => ({value: key, label: formatFinancialYearLabel(key)}));
+}
+
+export function getDiwaliYearOptions(transactions?: CashFlowTransaction[] | null) {
+  const keys = listDiwaliYearKeys((transactions ?? []).map((t) => t.transactionDate));
+  return keys.map((key) => ({
+    value: key,
+    label: formatDiwaliYearLabel(key),
+    description: describeDiwaliYearWindow(key),
+  }));
 }
 
 export function filterTransactionsByFinancialYear(
@@ -193,7 +240,9 @@ export function filterTransactionsBeforeDate(
   return (transactions ?? []).filter((t) => new Date(t.transactionDate).getTime() < before);
 }
 
-export function buildFinancialYearCashFlow(transactions?: CashFlowTransaction[] | null): CashFlowPeriod[] {
+export function buildFinancialYearCashFlow(
+  transactions?: CashFlowTransaction[] | null,
+): CashFlowPeriod[] {
   const map = new Map<string, CashFlowPeriod>();
 
   for (const transaction of transactions ?? []) {
@@ -211,9 +260,7 @@ export function buildFinancialYearMonthlyCashFlow(
   const map = new Map<string, CashFlowPeriod>();
 
   for (const transaction of filterTransactionsByFinancialYear(transactions, fyKey)) {
-    const date = new Date(transaction.transactionDate);
-    const sortKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    const label = date.toLocaleDateString("en-IN", {month: "short", year: "numeric"});
+    const {sortKey, label} = monthPeriodFromDate(transaction.transactionDate);
     upsertCashFlowPeriod(map, sortKey, label, transaction);
   }
 
@@ -256,20 +303,50 @@ export function buildNetChangePeriods(periods: CashFlowPeriod[]): NetChangePerio
   }));
 }
 
-export function buildFinancialYearWaterfall(
+export function filterTransactionsByDiwaliYear(
   transactions: CashFlowTransaction[] | null | undefined,
-  fyKey: string,
-): WaterfallBar[] {
-  const fyStart = getFinancialYearStartDate(fyKey);
-  const opening = computeCashBalanceFromTransactions(filterTransactionsBeforeDate(transactions, fyStart));
-  const fyTxns = filterTransactionsByFinancialYear(transactions, fyKey);
+  diwaliKey: string,
+): CashFlowTransaction[] {
+  return (transactions ?? []).filter((t) => isDateInDiwaliYear(t.transactionDate, diwaliKey));
+}
 
+export function buildDiwaliYearCashFlow(
+  transactions?: CashFlowTransaction[] | null,
+): CashFlowPeriod[] {
+  const map = new Map<string, CashFlowPeriod>();
+
+  for (const transaction of transactions ?? []) {
+    const diwaliKey = getDiwaliYearKey(transaction.transactionDate);
+    upsertCashFlowPeriod(map, diwaliKey, formatDiwaliYearLabel(diwaliKey), transaction);
+  }
+
+  return [...map.values()].sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+}
+
+export function buildDiwaliYearMonthlyCashFlow(
+  transactions: CashFlowTransaction[] | null | undefined,
+  diwaliKey: string,
+): CashFlowPeriod[] {
+  const map = new Map<string, CashFlowPeriod>();
+
+  for (const transaction of filterTransactionsByDiwaliYear(transactions, diwaliKey)) {
+    const {sortKey, label} = monthPeriodFromDate(transaction.transactionDate);
+    upsertCashFlowPeriod(map, sortKey, label, transaction);
+  }
+
+  return [...map.values()].sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+}
+
+function buildCashBridgeWaterfall(
+  opening: number,
+  periodTransactions: CashFlowTransaction[],
+): WaterfallBar[] {
   let income = 0;
   let expense = 0;
   let lent = 0;
   let returns = 0;
 
-  for (const transaction of fyTxns) {
+  for (const transaction of periodTransactions) {
     if (transaction.transactionType === "income") {
       income += transaction.transactionAmount;
       if (isReturnedIncome(transaction.transactionDescription)) {
@@ -356,6 +433,28 @@ export function buildFinancialYearWaterfall(
   });
 
   return bars;
+}
+
+export function buildFinancialYearWaterfall(
+  transactions: CashFlowTransaction[] | null | undefined,
+  fyKey: string,
+): WaterfallBar[] {
+  const fyStart = getFinancialYearStartDate(fyKey);
+  const opening = computeCashBalanceFromTransactions(
+    filterTransactionsBeforeDate(transactions, fyStart),
+  );
+  return buildCashBridgeWaterfall(opening, filterTransactionsByFinancialYear(transactions, fyKey));
+}
+
+export function buildDiwaliYearWaterfall(
+  transactions: CashFlowTransaction[] | null | undefined,
+  diwaliKey: string,
+): WaterfallBar[] {
+  const diwaliStart = getDiwaliYearStartDate(diwaliKey);
+  const opening = diwaliStart
+    ? computeCashBalanceFromTransactions(filterTransactionsBeforeDate(transactions, diwaliStart))
+    : 0;
+  return buildCashBridgeWaterfall(opening, filterTransactionsByDiwaliYear(transactions, diwaliKey));
 }
 
 export function buildWealthBreakdown(wealth: PortfolioSummary): WealthSlice[] {
